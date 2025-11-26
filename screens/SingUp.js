@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Image, // Importa Image
+  Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-// --- Componente Principal de la Pantalla de Bienvenida ---
 export default function SingUp({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
@@ -18,16 +17,16 @@ export default function SingUp({ navigation }) {
 
       {/* --- Encabezado con flecha de retroceso --- */}
       <View style={styles.header}>
-        <TouchableOpacity >
-          <Feather onPress={() => navigation.navigate('Onboarding3')} name="arrow-left" size={26} color="#1E1E1E" />
+        <TouchableOpacity onPress={() => navigation.navigate("Onboarding3")}>
+          <Feather name="arrow-left" size={26} color="#1E1E1E" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.mainContent}>
-        <Image 
-          source={require('../assets/Registro.png')} 
-          style={styles.illustration} 
-          resizeMode="contain" // 'contain' asegura que la imagen se vea completa dentro de su contenedor
+        <Image
+          source={require("../assets/Registro.png")}
+          style={styles.illustration}
+          resizeMode="contain"
         />
 
         <Text style={styles.title}>Crea tu cuenta</Text>
@@ -39,28 +38,33 @@ export default function SingUp({ navigation }) {
 
       {/* --- Contenedor de Botones y Footer --- */}
       <View style={styles.footerContainer}>
-        <TouchableOpacity style={styles.primaryButton}>
+        {/* ✅ Botón que lleva a la pantalla PhoneInput */}
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate("PhoneInput")}
+        >
           <Text style={styles.primaryButtonText}>Registrarse</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton}
-        onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.secondaryButtonText}>Iniciar Sesion</Text>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={styles.secondaryButtonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
 
         <Text style={styles.footerText}>
-          Al continuar aceptas nuestra
+          Al continuar aceptas nuestros
           <Text style={styles.linkText}> Términos de servicio </Text>
-          and
-          <Text style={styles.linkText}> Política de privacidad
-</Text>
+          y
+          <Text style={styles.linkText}> Política de privacidad</Text>.
         </Text>
       </View>
     </SafeAreaView>
   );
 }
 
-// --- Hoja de Estilos ---
+// --- Estilos ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -75,23 +79,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 30,
-    marginTop: -50, // Ajusta para centrar verticalmente
+    marginTop: -50,
   },
-  // Estilo para el placeholder de la imagen
-  illustrationPlaceholder: {
-    width: 250,
-    height: 250,
-    backgroundColor: "#F0F0F0",
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  placeholderText: {
-    color: "#AAA",
-    fontSize: 16,
-  },
-  // Estilo si usas una <Image> real
   illustration: {
     width: "100%",
     height: 250,
@@ -112,7 +101,7 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     paddingHorizontal: 30,
-    paddingBottom: 40, // Espacio para el 'home indicator'
+    paddingBottom: 40,
   },
   primaryButton: {
     backgroundColor: "#347AF0",
@@ -128,7 +117,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: "white",
-    paddingVertical: 14, // Ligeramente menos padding por el borde
+    paddingVertical: 14,
     borderRadius: 30,
     alignItems: "center",
     borderWidth: 2,

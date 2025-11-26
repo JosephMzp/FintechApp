@@ -10,9 +10,14 @@ import {
   Platform,
   Modal,
   FlatList,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+
+// 1. CORRECCIÓN: Importamos desde AuthStore, no UsuarioStore
+import { useAuthStore } from '../store/AuthStore'; 
 
 const COUNTRIES = [
   { code: 'PE', name: 'Perú', dialCode: '+51', maxDigits: 9, flag: '🇵🇪' },
@@ -24,23 +29,41 @@ const COUNTRIES = [
 export default function LoginScreen() {
   const navigation = useNavigation();
 
-  const [country, setCountry] = useState(COUNTRIES[0]); // por defecto Perú
+  // Extraemos la función login y el estado de carga
+  const { login, loading } = useAuthStore(); 
+
+  const [country, setCountry] = useState(COUNTRIES[0]); 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [countryModalVisible, setCountryModalVisible] = useState(false);
 
   const handlePhoneChange = (text) => {
-    // quitar todo lo que no sea dígito
     const numeric = text.replace(/[^0-9]/g, '');
-    // limitar según el país seleccionado
     const limited = numeric.slice(0, country.maxDigits);
     setPhone(limited);
   };
 
-  const handleLogin = () => {
-    // navegación simulada — sin autenticación real
-    navigation.replace('Home');
+  const handleLogin = async () => {
+    // Validación básica
+    if (phone.length === 0 || password.length === 0) {
+      Alert.alert("Campos vacíos", "Por favor ingresa tu número y contraseña");
+      return;
+    }
+
+    try {
+      // IMPORTANTE: Enviamos 'phone' (solo los dígitos) y 'password'.
+      // El AuthStore se encarga de agregarle el "@miapp.com"
+      await login(phone, password);
+      
+      // Si el login no lanza error, navegamos al Home
+      navigation.replace('Home');
+      
+    } catch (error) {
+      console.log(error);
+      // Mensaje de error amigable para el usuario
+      Alert.alert("Error de acceso", "El número o la contraseña son incorrectos.");
+    }
   };
 
   const openCountrySelector = () => setCountryModalVisible(true);
@@ -51,7 +74,6 @@ export default function LoginScreen() {
       style={styles.countryRow}
       onPress={() => {
         setCountry(item);
-        // vaciar el teléfono si excede el nuevo límite
         setPhone((p) => p.slice(0, item.maxDigits));
         closeCountrySelector();
       }}
@@ -69,16 +91,14 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* Back arrow (si quieres que regrese) */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="chevron-back" size={26} color="#333" />
       </TouchableOpacity>
 
       <Text style={styles.brand}>Coinpay</Text>
       <Text style={styles.title}>Inicia sesión en tu cuenta</Text>
-      <Text style={styles.subtitle}>Ingresa tu número y contrseña para continuar</Text>
+      <Text style={styles.subtitle}>Ingresa tu número y contraseña para continuar</Text>
 
-      {/* Campo del teléfono con selector de país */}
       <View style={styles.phoneRow}>
         <TouchableOpacity style={styles.prefixContainer} onPress={openCountrySelector}>
           <Text style={styles.flagText}>{country.flag}</Text>
@@ -90,7 +110,7 @@ export default function LoginScreen() {
           style={styles.phoneInput}
           placeholder="Número de celular"
           placeholderTextColor="#9AA6BF"
-          keyboardType={Platform.OS === 'ios' ? 'phone-pad' : 'numeric'} // telefono / numerico
+          keyboardType={Platform.OS === 'ios' ? 'phone-pad' : 'numeric'}
           value={phone}
           onChangeText={handlePhoneChange}
           textContentType="telephoneNumber"
@@ -98,7 +118,6 @@ export default function LoginScreen() {
         />
       </View>
 
-      {/* Campo contraseña */}
       <View style={styles.passwordRow}>
         <TextInput
           style={styles.passwordInput}
@@ -114,29 +133,32 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={() => {/* Aquí podrías navegar a recuperar contraseña */}} >
+      <TouchableOpacity onPress={() => {}}>
         <Text style={styles.forgot}>Olvidaste tu contraseña</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={[
           styles.loginButton,
-          // si quieres que el botón esté activo solo cuando haya algo, puedes condicionar aquí
           { backgroundColor: phone.length >= 1 && password.length >= 1 ? '#347AF0' : '#9BB8EC' },
         ]}
         onPress={handleLogin}
+        disabled={loading}
       >
-        <Text style={styles.loginText}>Iniciar Sesion</Text>
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.loginText}>Iniciar Sesión</Text>
+        )}
       </TouchableOpacity>
 
-      {/* Modal selector de países */}
       <Modal
         visible={countryModalVisible}
         animationType="slide"
         transparent={true}
         onRequestClose={closeCountrySelector}
       >
-        <TouchableOpacity style={styles.modalOverlay} onPress={closeCountrySelector} activeOpacity={1}>
+         <TouchableOpacity style={styles.modalOverlay} onPress={closeCountrySelector} activeOpacity={1}>
           <View style={styles.modalInner}>
             <Text style={styles.modalTitle}>Select country</Text>
             <FlatList
