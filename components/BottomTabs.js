@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function BottomTabs() {
+  const navigation = useNavigation();
   return (
     <View style={styles.bottomTabs}>
-      <TouchableOpacity style={styles.tabItem}>
+      <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
         <Feather name="home" size={28} color="#347AF0" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.tabItem}>
@@ -16,7 +18,7 @@ export default function BottomTabs() {
         <Feather name="grid" size={28} color="white" />
       </TouchableOpacity>
       
-      <TouchableOpacity style={styles.tabItem}>
+      <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate("SupportChat")}>
         <Feather name="message-square" size={28} color="#AAA" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.tabItem}>

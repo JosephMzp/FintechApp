@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 // Importamos los íconos de Expo
 import { Feather, FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import  BottomTabs  from '../components/BottomTabs.js';
 
 // --- Componente del Encabezado (Sección Azul) ---
 const Header = () => (
@@ -130,29 +132,11 @@ const Transactions = () => (
 );
 
 // --- Componente de la Barra de Navegación Inferior ---
-const BottomTabs = () => (
-  <View style={styles.bottomTabs}>
-    <TouchableOpacity style={styles.tabItem}>
-      <Feather name="home" size={28} color="#347AF0" />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.tabItem}>
-      <Feather name="clock" size={28} color="#AAA" />
-    </TouchableOpacity>
-    {/* Botón central especial */}
-    <TouchableOpacity style={styles.centralTabButton}>
-      <Feather name="grid" size={28} color="white" />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.tabItem}>
-      <Feather name="message-square" size={28} color="#AAA" />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.tabItem}>
-      <Feather name="user" size={28} color="#AAA" />
-    </TouchableOpacity>
-  </View>
-);
+
 
 // --- Componente Principal de la App ---
-export default function App() {
+export default function HomeScreen() {
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       {/* Barra de estado con texto claro */}

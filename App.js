@@ -19,6 +19,7 @@ import AddEmailScreen from './screens/AddEmailScreen';
 import CountryResidenceScreen from './screens/CountryResidenceScreen';
 import PersonalInfoScreen from './screens/PersonalInfoScreen';
 import AddressScreen from './screens/AddressScreen';
+import SupportChatScreen from './screens/SupportChatScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,7 @@ export default function App() {
         <Stack.Screen name="CountryResidenceScreen" component={CountryResidenceScreen} />
         <Stack.Screen name="PersonalInfoScreen" component={PersonalInfoScreen} />
         <Stack.Screen name="AddressScreen" component={AddressScreen} />
+        <Stack.Screen name="SupportChat" component={SupportChatScreen} />
 
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
