@@ -1,0 +1,76 @@
+name: Build and Deploy in EAS - Lab-06
+on:
+  push:
+    branches:
+      - Lab-06
+
+jobs:
+  build-and-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: npm
+          
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Generate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: FintechApp-build  # Simplificado: Quité ${{matrix.platform}} que daba error
+          path: dist/
+
+  publish-eas:
+    needs: build-and-archive
+    runs-on: ubuntu-latest
+    env:
+      EAS_TOKEN: 98CzjX-LBtmNUMpNc1gDAJEvFF2adUUzgOVlK_sH
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ env.EAS_TOKEN }}
+          expo-version: latest
+          eas-version: latest
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: FintechApp-build  # Corregido: Coincide con el nombre del job anterior
+          path: dist/
+
+      - name: Authenticate with EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{env.EAS_TOKEN}}
+          eas-cache: true
+          expo-cache: true
+
+      - name: Publish QR to EAS
+        run: eas update --auto --non-interactive
+
+      - name: Publish Android Artifact to EAS
+        run: eas build -p android --profile development --non-interactive

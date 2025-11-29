@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Fintech-Mobile-App",
-    "slug": "Fintech-Mobile-App",
+    "slug": "fintech-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +20,23 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.uprmovile.fintechapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2e511638-df2e-4ce7-8d37-9f23f54077e4"
+      }
+    },
+    "owner": "upr-movile",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2e511638-df2e-4ce7-8d37-9f23f54077e4"
     }
   }
 }
