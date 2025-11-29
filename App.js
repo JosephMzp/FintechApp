@@ -22,6 +22,7 @@ import CountryResidenceScreen from './screens/CountryResidenceScreen';
 import PersonalInfoScreen from './screens/PersonalInfoScreen';
 import AddressScreen from './screens/AddressScreen';
 import SupportChatScreen from './screens/SupportChatScreen';
+import ProfileScreen from './screens/ProfileScreen'
 
 // Home
 import HomeScreen from './screens/HomeScreen';
@@ -59,6 +60,7 @@ export default function App() {
         <Stack.Screen name="PersonalInfoScreen" component={PersonalInfoScreen} />
         <Stack.Screen name="AddressScreen" component={AddressScreen} />
         <Stack.Screen name="SupportChat" component={SupportChatScreen} />
+        <Stack.Screen name="ProfileSreen" component={ProfileScreen} />
 
         {/* App */}
         <Stack.Screen name="Login" component={LoginScreen} />

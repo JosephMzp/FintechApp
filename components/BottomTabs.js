@@ -21,7 +21,7 @@ export default function BottomTabs() {
       <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate("SupportChat")}>
         <Feather name="message-square" size={28} color="#AAA" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.tabItem}>
+      <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate("ProfileSreen")}>
         <Feather name="user" size={28} color="#AAA" />
       </TouchableOpacity>
     </View>

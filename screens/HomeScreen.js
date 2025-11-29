@@ -13,10 +13,8 @@ import { Feather, FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/ve
 import { useNavigation } from "@react-navigation/native";
 import BottomTabs from '../components/BottomTabs.js';
 
-// --- CAMBIO 1: Eliminamos 'const navigation' y 'checkCards' de aquí ---
-
 // --- Componente del Encabezado ---
-// CAMBIO 2: Header ahora recibe la función 'onAddMoney' como prop
+// CAMBIO: Header ahora recibe la función 'onAddMoney' como prop
 const Header = ({ onAddMoney }) => (
   <View style={styles.header}>
     <View style={styles.topBar}>
