@@ -1,48 +1,87 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { supabase } from "../supabase/supabase.config";
-
+import Icon from "react-native-vector-icons/Feather";
 
 export default function AddCardFormScreen({ navigation }) {
-  const [holderName, setHolderName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
-  const saveCard = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+  const formatCardNumber = (value) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 16);
+    const formatted = numbers.replace(/(.{4})/g, "$1-").replace(/-$/, "");
+    setCardNumber(formatted);
+  };
 
-    const { error } = await supabase.from("cards").insert([
-      {
-        user_id: user.id,
-        holder_name: holderName,
-        card_number: cardNumber,
-        expiry,
-        cvv,
-      },
-    ]);
+  const formatExpiry = (value) => {
+    const sanitized = value.replace(/\D/g, "").slice(0, 4);
+    const formatted = sanitized.replace(/(\d{2})(\d{0,2})/, "$1/$2");
+    setExpiry(formatted);
+  };
 
-    if (!error) navigation.navigate("AddCardVerify");
+  const formatCVV = (value) => {
+    const sanitized = value.replace(/\D/g, "").slice(0, 4);
+    setCvv(sanitized);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add card</Text>
 
-      <TextInput style={styles.input} placeholder="Account holder name"
-        value={holderName} onChangeText={setHolderName} />
+      {/* Botón volver */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-left" size={26} color="#3b82f6" />
+      </TouchableOpacity>
 
-      <TextInput style={styles.input} placeholder="Card number"
-        value={cardNumber} onChangeText={setCardNumber} keyboardType="numeric" />
+      <Text style={styles.title}>Registrar Tarjeta</Text>
 
-      <TextInput style={styles.input} placeholder="MM/YY"
-        value={expiry} onChangeText={setExpiry} />
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
 
-      <TextInput style={styles.input} placeholder="CVV"
-        value={cvv} onChangeText={setCvv} keyboardType="numeric" secureTextEntry />
+      <TextInput
+        style={styles.input}
+        placeholder="Apellidos"
+        value={lastName}
+        onChangeText={setLastName}
+      />
 
-      <TouchableOpacity style={styles.button} onPress={saveCard}>
-        <Text style={styles.buttonText}>Verify</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Número de tarjeta"
+        value={cardNumber}
+        onChangeText={formatCardNumber}
+        keyboardType="numeric"
+        maxLength={19} // xxxx-xxxx-xxxx-xxxx
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="MM/AA"
+        value={expiry}
+        onChangeText={formatExpiry}
+        keyboardType="numeric"
+        maxLength={5}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="CVV"
+        value={cvv}
+        onChangeText={formatCVV}
+        keyboardType="numeric"
+        secureTextEntry
+        maxLength={4}
+      />
+
+      {/* botón verificar */}
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("AddCardVerify")}>
+        <Text style={styles.buttonText}>Verificar</Text>
       </TouchableOpacity>
     </View>
   );
@@ -50,8 +89,21 @@ export default function AddCardFormScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: "center" },
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 20 },
-  input: { padding: 15, borderWidth: 1, borderRadius: 10, marginBottom: 15 },
-  button: { backgroundColor: "#3b82f6", padding: 15, borderRadius: 12, marginTop: 15 },
-  buttonText: { color: "#fff", textAlign: "center", fontWeight: "700", fontSize: 16 },
+  backButton: { position: "absolute", top: 20, left: 15 },
+  title: { fontSize: 26, fontWeight: "800", marginBottom: 25, textAlign: "center" },
+  input: {
+    padding: 15,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 15,
+    fontSize: 16,
+    backgroundColor: "#fff"
+  },
+  button: {
+    backgroundColor: "#3b82f6",
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  buttonText: { color: "#fff", textAlign: "center", fontWeight: "800", fontSize: 17 },
 });

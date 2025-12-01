@@ -23,6 +23,7 @@ import PersonalInfoScreen from './screens/PersonalInfoScreen';
 import AddressScreen from './screens/AddressScreen';
 import SupportChatScreen from './screens/SupportChatScreen';
 import ProfileScreen from './screens/ProfileScreen'
+import EditProfileScreen from './screens/EditProfileScreen'
 
 // Home
 import HomeScreen from './screens/HomeScreen';
@@ -70,6 +71,8 @@ export default function App() {
         <Stack.Screen name="AddCardForm" component={AddCardFormScreen} />
         <Stack.Screen name="AddCardVerify" component={AddCardVerifyScreen} />
         <Stack.Screen name="CardList" component={CardListScreen} />
+        <Stack.Screen name="Editprofile" component={EditProfileScreen} />
+    
         
 
 

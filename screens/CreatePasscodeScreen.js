@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
 } from "react-native";
 import { useRegisterStore } from "../store/RegistroStore";
+import Icon from "react-native-vector-icons/Ionicons";
 
 export default function CreatePasscodeScreen({ navigation }) {
   const setPassword = useRegisterStore((s) => s.setPassword);
@@ -22,9 +22,15 @@ export default function CreatePasscodeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create passcode</Text>
+
+      {/* BOTÓN PARA REGRESAR */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-back" size={28} color="#000" />
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Crear código de acceso</Text>
       <Text style={styles.subtitle}>
-        This info needs to be accurate with your ID document.
+        Esta información debe coincidir con tu documento de identidad.
       </Text>
 
       <View style={styles.pinContainer}>
@@ -64,7 +70,7 @@ export default function CreatePasscodeScreen({ navigation }) {
             navigation.navigate("AddEmailScreen");
           }}
         >
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>Continuar</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -78,8 +84,13 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: "#fff",
   },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  subtitle: { color: "#777", marginBottom: 30 },
+  backBtn: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+  },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10, textAlign: "center" },
+  subtitle: { color: "#777", marginBottom: 30, textAlign: "center" },
   pinContainer: {
     flexDirection: "row",
     justifyContent: "center",
