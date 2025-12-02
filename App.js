@@ -29,10 +29,8 @@ import EditProfileScreen from './screens/EditProfileScreen'
 import HomeScreen from './screens/HomeScreen';
 
 // Tarjetas
-import AddCardIntroScreen from './screens/AddCardIntroScreen';
-import AddCardFormScreen from "./screens/AddCardFormScreen";
-import AddCardVerifyScreen from "./screens/AddCardVerifyScreen";
-import CardListScreen from "./screens/CardListScreen";
+
+
 
 
 const Stack = createNativeStackNavigator();
@@ -67,10 +65,7 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
 
-        <Stack.Screen name="AddCardIntro" component={AddCardIntroScreen} />
-        <Stack.Screen name="AddCardForm" component={AddCardFormScreen} />
-        <Stack.Screen name="AddCardVerify" component={AddCardVerifyScreen} />
-        <Stack.Screen name="CardList" component={CardListScreen} />
+
         <Stack.Screen name="Editprofile" component={EditProfileScreen} />
     
         
