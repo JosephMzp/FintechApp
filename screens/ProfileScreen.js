@@ -1,106 +1,132 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Switch } from "react-native";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Switch,
+} from "react-native";
+import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
-import BottomTabs from "../components/BottomTabs";
+import { useRegisterStore } from "../store/RegistroStore";
 
-export default function ProfileScreen() {
+const ProfileScreen = () => {
   const navigation = useNavigation();
-  const [darkMode, setDarkMode] = React.useState(false);
+  const { name, email, phone } = useRegisterStore();
+  const [isDark, setIsDark] = React.useState(false);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={26} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>My Profile</Text>
-        <View style={{ width: 26 }} />
-      </View>
 
-      {/* User Data */}
-      <View style={styles.card}>
+      {/* Botón Volver */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-left" size={26} color="#3b82f6" />
+      </TouchableOpacity>
+
+      {/* Header */}
+      <Text style={styles.title}>Mi Perfil</Text>
+
+      {/* Profile Card */}
+      <View style={styles.profileCard}>
         <Image
-          source={require("../assets/addcard.png")}
+          source={{
+            uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+          }}
           style={styles.avatar}
         />
-
-        <Text style={styles.name}>Kevin Daniel</Text>
-        <Text style={styles.email}>kevin@email.com</Text>
-        <Text style={styles.phone}>+51 999 999 999</Text>
+        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.email}>{email}</Text>
+        <Text style={styles.phone}>{phone}</Text>
       </View>
 
-      {/* Menu list */}
-      <View style={styles.menu}>
+      {/* Menu Items */}
+      <View style={styles.menuContainer}>
 
-        <View style={styles.row}>
-          <Feather name="moon" size={20} color="#000" />
-          <Text style={styles.rowText}>Dark Mode</Text>
-          <Switch value={darkMode} onValueChange={() => setDarkMode(!darkMode)} />
+        <View style={styles.menuItem}>
+          <Icon name="moon" size={22} />
+          <Text style={styles.menuText}>Modo oscuro</Text>
+          <Switch
+            value={isDark}
+            onValueChange={setIsDark}
+            style={{ marginLeft: "auto" }}
+          />
         </View>
 
-        <TouchableOpacity style={styles.row}>
-          <Ionicons name="person-outline" size={20} color="#000" />
-          <Text style={styles.rowText}>Personal Info</Text>
-          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("Editprofile")}
+        >
+          <Icon name="user" size={22} color="#3b82f6" />
+          <Text style={styles.menuText}>Información personal</Text>
+          <Icon name="chevron-right" size={22} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.row}
-          onPress={() => navigation.navigate("CardList")}
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("CardListScreen")}
         >
-          <MaterialIcons name="credit-card" size={20} color="#000" />
-          <Text style={styles.rowText}>Bank & Cards</Text>
-          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+          <Icon name="credit-card" size={22} color="#fbbf24" />
+          <Text style={styles.menuText}>Bancos y Tarjetas</Text>
+          <Icon name="chevron-right" size={22} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row}>
-          <Feather name="repeat" size={20} color="#000" />
-          <Text style={styles.rowText}>Transactions</Text>
-          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("Transactions")}
+        >
+          <Icon name="dollar-sign" size={22} color="#ef4444" />
+          <Text style={styles.menuText}>Transacciones</Text>
+          <Icon name="chevron-right" size={22} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row}>
-          <Ionicons name="settings-outline" size={20} color="#000" />
-          <Text style={styles.rowText}>Settings</Text>
-          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("SupportChat")}
+        >
+          <Icon name="message-circle" size={22} color="#2563eb" />
+          <Text style={styles.menuText}>Soporte</Text>
+          <Icon name="chevron-right" size={22} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.row}>
-          <Feather name="shield" size={20} color="#000" />
-          <Text style={styles.rowText}>Data Privacy</Text>
-          <Ionicons name="chevron-forward" size={18} color="#aaa" />
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("Check")}
+        >
+          <Icon name="shield" size={22} color="#16a34a" />
+          <Text style={styles.menuText}>Privacidad y Seguridad</Text>
+          <Icon name="chevron-right" size={22} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
-        
 
       </View>
-      <View>
-          <BottomTabs/>
-        </View>
     </View>
-    
   );
-}
+};
+
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F6FA", paddingHorizontal: 20, paddingTop: 50 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  title: { fontSize: 20, fontWeight: "600", color: "#000" },
-
-  card: { alignItems: "center", marginBottom: 25 },
-  avatar: { width: 80, height: 80, borderRadius: 50, marginBottom: 10 },
-  name: { fontSize: 22, fontWeight: "700", color: "#000" },
-  email: { color: "#888", marginTop: 3 },
-  phone: { color: "#777", marginTop: 2 },
-
-  menu: { backgroundColor: "#fff", borderRadius: 20, padding: 10 },
-  row: {
+  container: { flex: 1, backgroundColor: "#f3f4f6", padding: 20 },
+  backButton: { position: "absolute", top: 20, left: 10, zIndex: 10 },
+  title: { fontSize: 22, textAlign: "center", fontWeight: "bold", marginBottom: 20 },
+  profileCard: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 20,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  avatar: { width: 80, height: 80, borderRadius: 40, marginBottom: 10 },
+  name: { fontSize: 20, fontWeight: "bold" },
+  email: { fontSize: 14, color: "gray" },
+  phone: { fontSize: 14, color: "gray" },
+  menuContainer: { backgroundColor: "white", borderRadius: 20, padding: 10 },
+  menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 15,
     borderBottomWidth: 1,
-    borderColor: "#EFEFEF",
+    borderColor: "#e5e7eb",
   },
-  rowText: { flex: 1, marginLeft: 10, fontSize: 16, fontWeight: "500" },
+  menuText: { fontSize: 16, marginLeft: 15 },
 });

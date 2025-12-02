@@ -7,8 +7,9 @@ import {
   FlatList,
 } from "react-native";
 import { useRegisterStore } from "../store/RegistroStore";
+import Icon from "react-native-vector-icons/Ionicons";
 
-const COUNTRIES = ["Peru", "Mexico", "United States", "Colombia", "Argentina"];
+const COUNTRIES = ["Perú", "México", "Estados Unidos", "Colombia", "Argentina"];
 
 export default function CountryResidenceScreen({ navigation }) {
   const setPais = useRegisterStore((s) => s.setPais);
@@ -16,9 +17,14 @@ export default function CountryResidenceScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Country of residence</Text>
+      {/* BOTÓN REGRESAR */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
+
+      <Text style={styles.title}>País de residencia</Text>
       <Text style={styles.subtitle}>
-        This info needs to be accurate with your ID document.
+        Esta información debe coincidir con tu documento de identidad.
       </Text>
 
       <FlatList
@@ -28,7 +34,9 @@ export default function CountryResidenceScreen({ navigation }) {
             style={[styles.item, selected === item && styles.selected]}
             onPress={() => setSelected(item)}
           >
-            <Text style={styles.itemText}>{item}</Text>
+            <Text style={[styles.itemText, selected === item && { color: "#fff" }]}>
+              {item}
+            </Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item}
@@ -42,7 +50,7 @@ export default function CountryResidenceScreen({ navigation }) {
           navigation.navigate("PersonalInfoScreen");
         }}
       >
-        <Text style={styles.buttonText}>Continue</Text>
+        <Text style={styles.buttonText}>Continuar</Text>
       </TouchableOpacity>
     </View>
   );
@@ -50,6 +58,7 @@ export default function CountryResidenceScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 25, backgroundColor: "#fff" },
+  backButton: { marginBottom: 10 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   subtitle: { color: "#666", marginBottom: 20 },
   item: {

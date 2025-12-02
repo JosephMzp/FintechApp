@@ -60,12 +60,15 @@ export const useUsuariosStore = create((set, get) => ({
   // OBTENER DATOS DEL USUARIO LOGEADO
   // ─────────────────────────────────────────────
   idusuario: 0,
-  mostrarUsuarios: async () => {
-    const response = await MostrarUsuarios();
-    set({ idusuario: response.id });
-    return response;
-  },
+  obtenerUsuarioActual: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
 
+    const user = await MostrarUsuarios(session.user.id);
+
+    set({ usuarioActual: user });
+    return user;
+  },
   // ─────────────────────────────────────────────
   // LISTAR TODOS LOS USUARIOS
   // ─────────────────────────────────────────────

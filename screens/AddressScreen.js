@@ -5,22 +5,21 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert, // Importamos Alert para mostrar errores
-  ActivityIndicator // Importamos para feedback visual
+  Alert,
+  ActivityIndicator
 } from "react-native";
 import { useRegisterStore } from "../store/RegistroStore";
 import { useUsuariosStore } from "../store/UsuarioStore";
+import Icon from "react-native-vector-icons/Ionicons";
 
 export default function AddressScreen({ navigation }) {
-  // Estados locales donde se guarda lo que escribe el usuario
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [loading, setLoading] = useState(false); // Estado para bloquear el botón mientras carga
+  const [loading, setLoading] = useState(false);
 
   const canContinue = address && city && postcode;
 
-  // Obtenemos los datos previos del Store
   const {
     telefono,
     password,
@@ -34,12 +33,33 @@ export default function AddressScreen({ navigation }) {
 
   const registrarUsuario = useUsuariosStore((s) => s.registrarUsuario);
 
+  // SOLO LETRAS Y ESPACIOS EN CIUDAD
+  const handleCityChange = (text) => {
+    const formatted = text.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ ]/g, "");
+    setCity(formatted);
+  };
+
+  // SOLO NÚMEROS EN CÓDIGO POSTAL
+  const handlePostcodeChange = (text) => {
+    const formatted = text.replace(/[^0-9]/g, "");
+    setPostcode(formatted);
+  };
+
   const handleFinish = async () => {
+    if (!canContinue) {
+      Alert.alert("Campos incompletos", "Por favor completa todos los campos.");
+      return;
+    }
+
+    if (postcode.length < 4) {
+      Alert.alert("Código inválido", "El código postal debe tener al menos 4 dígitos.");
+      return;
+    }
+
     if (loading) return;
+
     setLoading(true);
 
-    // Llamamos a la función pasando los datos del estado local (address, city, postcode)
-    // junto con los datos acumulados del store.
     const user = await registrarUsuario({
       telefono,
       password,
@@ -47,29 +67,35 @@ export default function AddressScreen({ navigation }) {
       pais,
       nombre: `${nombre} ${apellido}`,
       nacimiento,
-      direccion: address,      // CORRECCIÓN: Usar variable local
-      ciudad: city,            // CORRECCIÓN: Usar variable local
-      codigo_postal: postcode, // CORRECCIÓN: Usar variable local
+      direccion: address,
+      ciudad: city,
+      codigo_postal: postcode,
     });
 
     setLoading(false);
 
     if (user) {
-      reset(); // Limpiamos el store
-      navigation.replace("Home"); // Navegamos solo si hubo éxito
+      reset();
+      navigation.replace("Home");
     } else {
-      Alert.alert("Error", "No se pudo registrar el usuario. Verifica tu conexión o datos.");
+      Alert.alert("Error", "No se pudo registrar el usuario. Intenta nuevamente.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home address</Text>
+
+      {/* BOTÓN REGRESAR */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-back" size={26} color="#000" />
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Dirección domiciliaria</Text>
       <Text style={styles.subtitle}>
-        This info needs to be accurate with your ID document.
+        Esta información debe coincidir con tu documento de identidad.
       </Text>
 
-      <Text style={styles.label}>Address Line</Text>
+      <Text style={styles.label}>Dirección</Text>
       <TextInput
         style={styles.input}
         value={address}
@@ -77,19 +103,19 @@ export default function AddressScreen({ navigation }) {
         placeholder="Ej. Av. Larco 123"
       />
 
-      <Text style={styles.label}>City</Text>
-      <TextInput 
-        style={styles.input} 
-        value={city} 
-        onChangeText={setCity} 
+      <Text style={styles.label}>Ciudad</Text>
+      <TextInput
+        style={styles.input}
+        value={city}
+        onChangeText={handleCityChange}
         placeholder="Ej. Lima"
       />
 
-      <Text style={styles.label}>Postcode</Text>
+      <Text style={styles.label}>Código Postal</Text>
       <TextInput
         style={styles.input}
         value={postcode}
-        onChangeText={setPostcode}
+        onChangeText={handlePostcodeChange}
         placeholder="Ej. 15036"
         keyboardType="numeric"
       />
@@ -97,20 +123,22 @@ export default function AddressScreen({ navigation }) {
       <TouchableOpacity
         style={[styles.button, { opacity: canContinue ? 1 : 0.4 }]}
         disabled={!canContinue || loading}
-        onPress={handleFinish} // CORRECCIÓN: Solo llamamos a handleFinish
+        onPress={handleFinish}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>Continuar</Text>
         )}
       </TouchableOpacity>
+      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 25, backgroundColor: "#fff" },
+  backButton: { marginBottom: 10 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   subtitle: { color: "#666", marginBottom: 20 },
   label: { color: "#555", marginBottom: 5 },
@@ -120,6 +148,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,
+    fontSize: 16,
   },
   button: {
     backgroundColor: "#347AF0",
