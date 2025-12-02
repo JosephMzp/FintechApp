@@ -31,7 +31,7 @@ import HomeScreen from './screens/HomeScreen';
 import AddCardIntroScreen from './screens/AddCardIntroScreen';
 import AddCardFormScreen from "./screens/AddCardFormScreen";
 import AddCardVerifyScreen from "./screens/AddCardVerifyScreen";
-import CardListScreen from "./screens/CardListScreen";
+import CardListScreen from "./screens/CardListScreen"
 
 
 const Stack = createNativeStackNavigator();

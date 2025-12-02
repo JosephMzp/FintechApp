@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, Switch } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import BottomTabs from "../components/BottomTabs";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -71,9 +72,14 @@ export default function ProfileScreen() {
           <Text style={styles.rowText}>Data Privacy</Text>
           <Ionicons name="chevron-forward" size={18} color="#aaa" />
         </TouchableOpacity>
+        
 
       </View>
+      <View>
+          <BottomTabs/>
+        </View>
     </View>
+    
   );
 }
 

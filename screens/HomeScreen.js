@@ -6,15 +6,20 @@ import {
   ScrollView, 
   TextInput, 
   TouchableOpacity, 
-  StatusBar 
+  StatusBar,
+  Alert,        // ✅ IMPORTANTE: Agregamos Alert por si falla la sesión
+  ActivityIndicator // Opcional, si quisieras poner un loading
 } from 'react-native';
 
 import { Feather, FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import BottomTabs from '../components/BottomTabs.js';
 
+// ✅ NUEVO: Importamos la config y el store
+import { supabase } from '../supabase/supabase.config'; 
+import { useTarjetaStore } from '../store/TarjetaStore';
+
 // --- Componente del Encabezado ---
-// CAMBIO: Header ahora recibe la función 'onAddMoney' como prop
 const Header = ({ onAddMoney }) => (
   <View style={styles.header}>
     <View style={styles.topBar}>
@@ -36,7 +41,6 @@ const Header = ({ onAddMoney }) => (
       <Text style={styles.balanceLabel}>Saldo disponible</Text>
     </View>
 
-      {/* Usamos la prop 'onAddMoney' en vez de llamar a la función global */}
       <TouchableOpacity style={styles.addMoneyButton} onPress={onAddMoney}>
         <FontAwesome name="plus-square-o" size={20} color="#347AF0" />
         <Text style={styles.addMoneyText}>Añadir dinero</Text>
@@ -53,7 +57,6 @@ const ActionButton = ({ icon, label, bgColor, onPress }) => (
   </TouchableOpacity>
 );
 
-// CAMBIO 3: Actions ahora recibe 'onBankPress' como prop
 const Actions = ({ onBankPress }) => (
   <View style={styles.actionsContainer}>
     <ActionButton 
@@ -66,7 +69,6 @@ const Actions = ({ onBankPress }) => (
       label="Pedido" 
       bgColor="#FFF8E8"
     />
-    {/* Usamos la prop que recibimos */}
     <ActionButton 
       icon={<MaterialCommunityIcons name="bank" size={22} color="#505050" />}
       label="Banco" 
@@ -131,25 +133,60 @@ const Transactions = () => (
 
 // --- Componente Principal de la App ---
 export default function HomeScreen() {
-  // CAMBIO 4: Movemos useNavigation ADENTRO del componente
   const navigation = useNavigation();
 
-  // CAMBIO 5: Movemos la función checkCards ADENTRO para que pueda usar 'navigation'
-  const checkCards = async () => {
-    // TEMPORAL (simulación) — luego lo conectaremos a Supabase
-    const hasCards = false;
+  // ✅ NUEVO: Usamos la función del Store para verificar tarjetas
+  const { listarTarjetas, loading } = useTarjetaStore();
 
-    if (!hasCards) {
-      navigation.navigate("AddCardIntro");
-    } else {
-      navigation.navigate("CardList");
+  // ✅ NUEVO: Lógica Real de Verificación
+  const checkCards = async () => {
+    try {
+        // 1. Obtener usuario de Auth (UUID)
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente.");
+            return;
+        }
+
+        // 2. BUSCAR EL ID NUMÉRICO EN TABLA USUARIOS
+        const { data: publicUser, error } = await supabase
+            .from('usuarios')
+            .select('id')
+            .eq('idauth', user.id) // Buscamos por el UUID
+            .single();
+
+        if (error || !publicUser) {
+            console.error("Usuario no encontrado en tabla pública o error de conexión");
+            // Opcional: Mandar a crear perfil si no existe
+            return;
+        }
+
+        // 3. Consultar Tarjetas usando el ID Numérico (BigInt)
+        const idNumerico = publicUser.id;
+        console.log("Verificando tarjetas para ID:", idNumerico);
+        
+        const tarjetasEncontradas = await listarTarjetas(idNumerico);
+
+        // 4. Verificar resultado y navegar
+        if (tarjetasEncontradas && tarjetasEncontradas.length > 0) {
+            console.log("Tiene tarjetas, yendo a Lista");
+            navigation.navigate("CardList");
+        } else {
+            console.log("No tiene tarjetas, yendo a Intro");
+            navigation.navigate("AddCardIntro");
+        }
+
+    } catch (error) {
+        console.error("Error verificando tarjetas:", error);
+        navigation.navigate("CardList"); 
     }
   };
   
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* CAMBIO 6: Pasamos checkCards como prop a los hijos */}
+      {/* Pasamos checkCards que ahora tiene la lógica real */}
       <Header onAddMoney={checkCards} />
       
       <ScrollView style={styles.contentArea} showsVerticalScrollIndicator={false}>
@@ -161,7 +198,7 @@ export default function HomeScreen() {
   );
 }
 
-// --- ESTILOS (IGUAL QUE ANTES) ---
+// --- ESTILOS (Tus estilos se mantienen igual) ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
