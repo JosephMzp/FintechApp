@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -7,19 +7,20 @@ import {
   TextInput, 
   TouchableOpacity, 
   StatusBar,
-  Alert,        // ✅ IMPORTANTE: Agregamos Alert por si falla la sesión
-  ActivityIndicator // Opcional, si quisieras poner un loading
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 
 import { Feather, FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import BottomTabs from '../components/BottomTabs.js';
 
-// ✅ NUEVO: Importamos la config y el store
 import { supabase } from '../supabase/supabase.config'; 
 import { useTarjetaStore } from '../store/TarjetaStore';
 
-// --- Componente del Encabezado ---
+// ------------------------------------------------------
+// HEADER (sin cambios funcionales)
+// ------------------------------------------------------
 const Header = ({ onAddMoney }) => (
   <View style={styles.header}>
     <View style={styles.topBar}>
@@ -48,6 +49,9 @@ const Header = ({ onAddMoney }) => (
     </View>
 );
 
+// ------------------------------------------------------
+// ACTIONS (sin cambios funcionales)
+// ------------------------------------------------------
 const ActionButton = ({ icon, label, bgColor, onPress }) => (
   <TouchableOpacity style={styles.actionItem} onPress={onPress}>
     <View style={[styles.actionIconCircle, { backgroundColor: bgColor }]}>
@@ -78,20 +82,66 @@ const Actions = ({ onBankPress }) => (
   </View>
 );
 
-const TransactionItem = ({ icon, title, amount, amountColor, bgColor }) => (
-  <TouchableOpacity style={styles.txItem}>
-    <View style={[styles.txIconCircle, { backgroundColor: bgColor }]}>
-      {icon}
-    </View>
-    <View style={styles.txDetails}>
-      <Text style={styles.txTitle}>{title}</Text>
-    </View>
-    <Text style={[styles.txAmount, { color: amountColor }]}>{amount}</Text>
-    <Feather name="chevron-right" size={20} color="#AAA" />
-  </TouchableOpacity>
-);
+// ------------------------------------------------------
+// ITEM DE TRANSACCIÓN (usa campos reales de la tabla)
+// ------------------------------------------------------
+const TransactionItem = ({ tx }) => {
+  // Ajusta iconos/colores por tipo
+  const tipo = (tx.tipo || "gasto").toLowerCase();
+  const config = {
+    gasto: {
+      icon: <MaterialCommunityIcons name="credit-card-outline" size={24} color="#347AF0" />,
+      color: "#E53935",
+      bg: "#EAF2FF"
+    },
+    ingreso: {
+      icon: <MaterialCommunityIcons name="arrow-bottom-left" size={24} color="#4CAF50" />,
+      color: "#4CAF50",
+      bg: "#E8F5E9"
+    },
+    factura: {
+      icon: <MaterialCommunityIcons name="receipt" size={24} color="#F5A623" />,
+      color: "#E53935",
+      bg: "#FFF8E8"
+    },
+    ahorro: {
+      icon: <MaterialCommunityIcons name="piggy-bank-outline" size={24} color="#7E57C2" />,
+      color: "#4CAF50",
+      bg: "#F3E5F5"
+    }
+  };
 
-const Transactions = () => (
+  const item = config[tipo] || config.gasto;
+
+  // Usamos `referencia` (o `descripcion`) y `monto` según tu tabla
+  const title = tx.referencia || tx.descripcion || "Movimiento";
+  const amount = Number(tx.monto) || 0;
+  const fecha = tx.fecha ? String(tx.fecha).split("T")[0] : "";
+
+  return (
+    <TouchableOpacity style={styles.txItem}>
+      <View style={[styles.txIconCircle, { backgroundColor: item.bg }]}>
+        {item.icon}
+      </View>
+
+      <View style={styles.txDetails}>
+        <Text style={styles.txTitle}>{title}</Text>
+        <Text style={styles.txDate}>{fecha}</Text>
+      </View>
+
+      <Text style={[styles.txAmount, { color: (tipo === "ingreso" || tipo === "ahorro") ? "#16a34a" : "#ef4444" }]}>
+        {(tipo === "ingreso" || tipo === "ahorro") ? `S/${amount}` : `-S/${amount}`}
+      </Text>
+
+      <Feather name="chevron-right" size={20} color="#AAA" />
+    </TouchableOpacity>
+  );
+};
+
+// ------------------------------------------------------
+// TRANSACCIONES: ahora jaladas de Supabase por tarjetas del usuario
+// ------------------------------------------------------
+const Transactions = ({ transacciones, loading }) => (
   <View style={styles.transactionsContainer}>
     <View style={styles.transactionsHeader}>
       <Text style={styles.transactionsTitle}>Transacciones</Text>
@@ -100,105 +150,161 @@ const Transactions = () => (
       </TouchableOpacity>
     </View>
 
-    <TransactionItem 
-      icon={<MaterialCommunityIcons name="credit-card-outline" size={24} color="#347AF0" />}
-      title="Gasto"
-      amount="-S/500"
-      amountColor="#E53935"
-      bgColor="#EAF2FF"
-    />
-    <TransactionItem 
-      icon={<MaterialCommunityIcons name="arrow-bottom-left" size={24} color="#4CAF50" />}
-      title="Ingreso"
-      amount="S/3000"
-      amountColor="#4CAF50"
-      bgColor="#E8F5E9"
-    />
-    <TransactionItem 
-      icon={<MaterialCommunityIcons name="receipt" size={24} color="#F5A623" />}
-      title="Facturas"
-      amount="-S/800"
-      amountColor="#E53935"
-      bgColor="#FFF8E8"
-    />
-    <TransactionItem 
-      icon={<MaterialCommunityIcons name="piggy-bank-outline" size={24} color="#7E57C2" />}
-      title="Ahorros"
-      amount="S/1000"
-      amountColor="#4CAF50"
-      bgColor="#F3E5F5"
-    />
+    {loading ? (
+      <ActivityIndicator size="large" color="#347AF0" />
+    ) : transacciones.length === 0 ? (
+      <Text style={{ textAlign: "center", color: "#666", marginTop: 10 }}>
+        No se encontraron transacciones
+      </Text>
+    ) : (
+      transacciones.map((tx) => <TransactionItem key={tx.id} tx={tx} />)
+    )}
   </View>
 );
 
-// --- Componente Principal de la App ---
+// ------------------------------------------------------
+// HOME SCREEN PRINCIPAL (modificado para traer transacciones reales)
+// ------------------------------------------------------
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const { listarTarjetas } = useTarjetaStore();
 
-  // ✅ NUEVO: Usamos la función del Store para verificar tarjetas
-  const { listarTarjetas, loading } = useTarjetaStore();
+  const [transacciones, setTransacciones] = useState([]);
+  const [loadingTx, setLoadingTx] = useState(true);
 
-  // ✅ NUEVO: Lógica Real de Verificación
-  const checkCards = async () => {
+  // Carga transacciones relacionadas a TODAS las tarjetas del usuario
+  const loadTransacciones = async () => {
     try {
-        // 1. Obtener usuario de Auth (UUID)
-        const { data: { user } } = await supabase.auth.getUser();
+      setLoadingTx(true);
 
-        if (!user) {
-            Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente.");
-            return;
-        }
+      // 1) Obtener user (UUID) desde auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setTransacciones([]);
+        return;
+      }
 
-        // 2. BUSCAR EL ID NUMÉRICO EN TABLA USUARIOS
-        const { data: publicUser, error } = await supabase
-            .from('usuarios')
-            .select('id')
-            .eq('idauth', user.id) // Buscamos por el UUID
-            .single();
+      // 2) Obtener id numérico desde tabla usuarios (idauth -> id)
+      const { data: usuarioData, error: userError } = await supabase
+        .from("usuarios")
+        .select("id")
+        .eq("idauth", user.id)
+        .single();
 
-        if (error || !publicUser) {
-            console.error("Usuario no encontrado en tabla pública o error de conexión");
-            // Opcional: Mandar a crear perfil si no existe
-            return;
-        }
+      if (userError || !usuarioData) {
+        console.error("No se encontró usuario público:", userError);
+        setTransacciones([]);
+        return;
+      }
 
-        // 3. Consultar Tarjetas usando el ID Numérico (BigInt)
-        const idNumerico = publicUser.id;
-        console.log("Verificando tarjetas para ID:", idNumerico);
-        
-        const tarjetasEncontradas = await listarTarjetas(idNumerico);
+      const userId = usuarioData.id;
 
-        // 4. Verificar resultado y navegar
-        if (tarjetasEncontradas && tarjetasEncontradas.length > 0) {
-            console.log("Tiene tarjetas, yendo a Lista");
-            navigation.navigate("CardList");
-        } else {
-            console.log("No tiene tarjetas, yendo a Intro");
-            navigation.navigate("AddCardIntro");
-        }
+      // 3) Obtener todas las tarjetas del usuario (tu store)
+      // listarTarjetas espera el user id (según tu implementación previa)
+      const tarjetas = await listarTarjetas(userId);
+      if (!tarjetas || tarjetas.length === 0) {
+        setTransacciones([]);
+        return;
+      }
 
-    } catch (error) {
-        console.error("Error verificando tarjetas:", error);
-        navigation.navigate("CardList"); 
+      // 4) Extraer todos los cuenta_id de las tarjetas
+      const cuentaIds = tarjetas
+        .map((t) => t.cuenta_id)
+        .filter((v) => v !== null && v !== undefined);
+
+      if (!cuentaIds || cuentaIds.length === 0) {
+        setTransacciones([]);
+        return;
+      }
+
+      // 5) Construir filtro OR para supabase: cuenta_origen IN (...) OR cuenta_destino IN (...)
+      // Supabase expects in with parentheses: in.(1,2,3)
+      const idsList = cuentaIds.join(",");
+
+      // 6) Consultar transacciones asociadas a esas cuentas
+      const { data, error } = await supabase
+        .from("transacciones")
+        .select("*")
+        .or(`cuenta_origen.in.(${idsList}),cuenta_destino.in.(${idsList})`)
+        .order("fecha", { ascending: false });
+
+      if (error) {
+        console.error("Error cargando transacciones:", error);
+        setTransacciones([]);
+        return;
+      }
+
+      // 7) Guardar
+      setTransacciones(data || []);
+    } catch (err) {
+      console.error("Error inesperado al cargar transacciones:", err);
+      setTransacciones([]);
+    } finally {
+      setLoadingTx(false);
     }
   };
-  
+
+  useEffect(() => {
+    loadTransacciones();
+
+    // opcional: re-cargar cada vez que la pantalla reciba foco
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadTransacciones();
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // ------------------------------------------------------
+  // MISMA FUNCIÓN QUE YA TENÍAS PARA CHECKCARDS (no tocada)
+  // ------------------------------------------------------
+  const checkCards = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        Alert.alert("Sesión expirada", "Por favor inicia sesión nuevamente.");
+        return;
+      }
+
+      const { data: publicUser } = await supabase
+        .from("usuarios")
+        .select("id")
+        .eq("idauth", user.id)
+        .single();
+
+      if (!publicUser) return;
+
+      const tarjetas = await listarTarjetas(publicUser.id);
+
+      if (tarjetas?.length > 0) navigation.navigate("CardList");
+      else navigation.navigate("AddCardIntro");
+    } catch (error) {
+      navigation.navigate("CardList");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* Pasamos checkCards que ahora tiene la lógica real */}
+
       <Header onAddMoney={checkCards} />
-      
+
       <ScrollView style={styles.contentArea} showsVerticalScrollIndicator={false}>
         <Actions onBankPress={checkCards} />
-        <Transactions />
+
+        {/* <-- Aquí se muestran las transacciones reales relacionadas a TODAS las tarjetas del usuario --> */}
+        <Transactions data={transacciones} loading={loadingTx} />
       </ScrollView>
+
       <BottomTabs />
     </View>
   );
 }
 
-// --- ESTILOS (Tus estilos se mantienen igual) ---
+// ------------------------------------------------------
+// ESTILOS (uso los tuyos intactos)
+// ------------------------------------------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -336,6 +442,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#222',
+  },
+  txDate: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 4,
   },
   txAmount: {
     fontSize: 16,

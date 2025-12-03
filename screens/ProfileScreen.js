@@ -64,7 +64,7 @@ const ProfileScreen = () => {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("CardListScreen")}
+          onPress={() => navigation.navigate("CardList")}
         >
           <Icon name="credit-card" size={22} color="#fbbf24" />
           <Text style={styles.menuText}>Bancos y Tarjetas</Text>
@@ -91,7 +91,7 @@ const ProfileScreen = () => {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("Check")}
+          onPress={() => navigation.navigate("SpendingScreen")}
         >
           <Icon name="shield" size={22} color="#16a34a" />
           <Text style={styles.menuText}>Privacidad y Seguridad</Text>

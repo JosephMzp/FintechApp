@@ -32,8 +32,8 @@ import HomeScreen from './screens/HomeScreen';
 import AddCardIntroScreen from './screens/AddCardIntroScreen';
 import AddCardFormScreen from "./screens/AddCardFormScreen";
 import CardListScreen from "./screens/CardListScreen";
-
-
+import SpendingScreen from "./screens/SpendingScreen";
+import SelectTarjetaScreen from "./screens/SelectTarjetaScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -73,7 +73,8 @@ export default function App() {
         <Stack.Screen name="AddCardIntro" component={AddCardIntroScreen} />
         <Stack.Screen name="AddCardForm" component={AddCardFormScreen} />
         <Stack.Screen name="CardList" component={CardListScreen} />
-        
+        <Stack.Screen name="SpendingScreen" component={SpendingScreen} />
+        <Stack.Screen name="SelectTarjetaScreen" component={SelectTarjetaScreen} />
 
 
       </Stack.Navigator>
