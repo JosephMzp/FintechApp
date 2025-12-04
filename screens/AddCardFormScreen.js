@@ -106,10 +106,29 @@ export default function AddCardFormScreen() {
       const result = await insertarTarjeta(datosParaBD);
 
       if (result) {
-        Alert.alert("Éxito", "Tarjeta guardada correctamente", [
-            { text: "OK", onPress: () => navigation.navigate("CardList", { showSuccess: true }) }
-        ]);
-      } else {
+  try {
+    // refrescar explicitamente la lista usando el id numerico que ya tenemos:
+    if (datosUsuario && datosUsuario.id) {
+      await listarTarjetas(datosUsuario.id); // <-- fuerza que el store haga la consulta y actualice `tarjetas`
+    }
+
+    Alert.alert("Éxito", "Tarjeta guardada correctamente", [
+      {
+        text: "OK",
+        onPress: () =>
+          navigation.navigate("CardList", {
+            showSuccess: true,
+            // pasamos timestamp para "forzar" cambio de params si fuera necesario:
+            _refreshAt: Date.now(),
+          }),
+      },
+    ]);
+  } catch (err) {
+    console.error("Error refrescando lista tras insertar:", err);
+    // para no romper la UX, igual navegamos
+    navigation.navigate("CardList", { showSuccess: true, _refreshAt: Date.now() });
+  }
+} else {
         // Si result es null, el store probablemente imprimió el error
         Alert.alert("Error", "No se pudo guardar la tarjeta. Verifica los datos.");
       }
@@ -222,7 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: "#F9F9F9",
     fontSize: 16,
-    color: "#333", // Asegura que el texto sea visible
+    color: "#333", 
   },
   row: {
     flexDirection: "row",

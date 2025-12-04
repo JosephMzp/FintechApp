@@ -13,56 +13,55 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons"; // Asegúrate de tener iconos
 import { supabase } from "../supabase/supabase.config";
 import { useTarjetaStore } from "../store/TarjetaStore";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function CardListScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   
   // Detectamos si venimos de "Agregar Tarjeta" para mostrar el mensaje verde
-  const showSuccessMessage = route.params?.showSuccess || false;
+  const showSuccessMessage = route?.params?.showSuccess ?? false;
 
   const { tarjetas, listarTarjetas, eliminarTarjeta, loading } = useTarjetaStore();
   const [userId, setUserId] = useState(null);
 
   // 1. Cargar las tarjetas al entrar
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
+    let mounted = true;
+
     const fetchCards = async () => {
       try {
-        // A. Obtener usuario de la sesión (Auth)
         const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-        if (user) {
-          // B. TRADUCCIÓN: Buscar el ID numérico en tu tabla pública 'usuarios'
-          // Buscamos donde la columna 'idauth' coincida con el UUID de sesión
-          const { data: datosUsuario, error } = await supabase
-            .from("usuarios")
-            .select("id") 
-            .eq("idauth", user.id) 
-            .single();
+        const { data: datosUsuario } = await supabase
+          .from("usuarios")
+          .select("id")
+          .eq("idauth", user.id)
+          .single();
 
-          if (error || !datosUsuario) {
-            console.error("No se encontró el usuario en la tabla pública usuarios", error);
-            return;
-          }
+        if (!datosUsuario) return;
+        const idNumerico = datosUsuario.id;
+        setUserId(idNumerico);
 
-          // C. Ahora tenemos el ID numérico (ej: 1, 45, 100)
-          const idNumerico = datosUsuario.id;
-          
-          setUserId(idNumerico); // Guardamos el ID numérico en el estado
-          
-          console.log("Usuario Auth UUID:", user.id);
-          console.log("Usuario Tabla ID (BigInt):", idNumerico);
-
-          // D. Llamamos a listarTarjetas con el NÚMERO, no el UUID
-          await listarTarjetas(idNumerico);
-        }
-      } catch (err) {
-        console.error("Error obteniendo datos:", err);
+        await listarTarjetas(idNumerico); // actualiza store y tarjetas
+      } catch (e) {
+        console.log("Error cargando tarjetas", e);
       }
     };
-    
+
     fetchCards();
-  }, []); // Se ejecuta al montar
+
+    // cleanup
+    return () => {
+      mounted = false;
+    };
+  }, [route?.params?._refreshAt]) // <-- dependemos del param _refreshAt para forzar el re-run
+);
+
+ // Se ejecuta al montar
 
   // 2. Función para confirmar borrado
   const handleDelete = (id) => {

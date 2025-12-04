@@ -7,13 +7,14 @@ import {
   TextInput, 
   TouchableOpacity, 
   StatusBar,
-  Alert,        // ✅ IMPORTANTE: Agregamos Alert por si falla la sesión
+  Alert,        
   ActivityIndicator // Opcional, si quisieras poner un loading
 } from 'react-native';
 
 import { Feather, FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import BottomTabs from '../components/BottomTabs.js';
+import Actions from "../components/Actions.js"
 
 // ✅ NUEVO: Importamos la config y el store
 import { supabase } from '../supabase/supabase.config'; 
@@ -46,36 +47,6 @@ const Header = ({ onAddMoney }) => (
         <Text style={styles.addMoneyText}>Añadir dinero</Text>
       </TouchableOpacity>
     </View>
-);
-
-const ActionButton = ({ icon, label, bgColor, onPress }) => (
-  <TouchableOpacity style={styles.actionItem} onPress={onPress}>
-    <View style={[styles.actionIconCircle, { backgroundColor: bgColor }]}>
-      {icon}
-    </View>
-    <Text style={styles.actionLabel}>{label}</Text>
-  </TouchableOpacity>
-);
-
-const Actions = ({ onBankPress }) => (
-  <View style={styles.actionsContainer}>
-    <ActionButton 
-      icon={<FontAwesome name="send" size={22} color="#347AF0" />}
-      label="Enviar" 
-      bgColor="#EAF2FF"
-    />
-    <ActionButton 
-      icon={<FontAwesome name="money" size={22} color="#F5A623" />}
-      label="Pedido" 
-      bgColor="#FFF8E8"
-    />
-    <ActionButton 
-      icon={<MaterialCommunityIcons name="bank" size={22} color="#505050" />}
-      label="Banco" 
-      bgColor="#F4F4F4"
-      onPress={onBankPress}
-    />
-  </View>
 );
 
 const TransactionItem = ({ icon, title, amount, amountColor, bgColor }) => (

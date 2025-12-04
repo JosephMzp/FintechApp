@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
 
-const ActionButton = ({ icon, label, bgColor }) => (
-  <TouchableOpacity style={styles.actionItem}>
+const ActionButton = ({ icon, label, bgColor,onPress }) => (
+  <TouchableOpacity style={styles.actionItem} onPress={onPress}>
     <View style={[styles.actionIconCircle, { backgroundColor: bgColor }]}>
       {icon}
     </View>
@@ -11,12 +12,14 @@ const ActionButton = ({ icon, label, bgColor }) => (
   </TouchableOpacity>
 );
 
-export default function Actions() {
+export default function Actions({ onBankPress }) {
+  const navigation = useNavigation();
   return (
     <View style={styles.actionsContainer}>
       <ActionButton 
         icon={<FontAwesome name="send" size={22} color="#347AF0" />}
         label="Enviar" 
+        onPress={() => navigation.navigate("SendMoney")}
         bgColor="#EAF2FF" 
       />
       <ActionButton 
@@ -28,6 +31,7 @@ export default function Actions() {
         icon={<MaterialCommunityIcons name="bank" size={22} color="#505050" />}
         label="Banco" 
         bgColor="#F4F4F4" 
+        onPress={onBankPress}
       />
     </View>
   );

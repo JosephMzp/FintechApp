@@ -16,8 +16,10 @@ export const useTarjetaStore = create((set, get) => ({
   tarjetaActual: [],
   parametros:{},
   listarTarjetas: async (p) => {
+    console.log("LLAMANDO listarTarjetas CON:", p);
     const data = await MostrarTarjeta(p);
     console.log("Tarjeta store:", data);
+    console.log("RESPUESTA SUPABASE:", data);
     set({ parametros: p });
     set({ tarjetas: data });
     return data;
