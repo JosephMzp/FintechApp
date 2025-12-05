@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -8,68 +8,96 @@ import {
   Image, 
   TouchableOpacity, 
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useUsuariosStore } from '../store/UsuarioStore'; // <--- IMPORTANTE
 
-// --- Datos de Prueba (Mock Data) ---
+// --- Datos de Prueba (Se muestran si no buscas nada) ---
 const RECENT_CONTACTS = [
-  { id: '1', name: 'Mehedi Hasan', email: 'helloyouthmind@gmail.com', amount: '-$100', image: 'https://i.pravatar.cc/150?img=11' },
-  { id: '2', name: 'Juan Perez', email: 'juan@gmail.com', amount: '-$50', image: 'https://i.pravatar.cc/150?img=12' },
-  { id: '3', name: 'Maria Lopez', email: 'maria@gmail.com', amount: '-$200', image: 'https://i.pravatar.cc/150?img=13' },
-  { id: '4', name: 'Carlos Ruiz', email: 'carlos@gmail.com', amount: '-$80', image: 'https://i.pravatar.cc/150?img=14' },
-  { id: '5', name: 'Ana Gomez', email: 'ana@gmail.com', amount: '-$120', image: 'https://i.pravatar.cc/150?img=15' },
+  { id: '1', nombre: 'Mehedi Hasan', correo: 'hello@gmail.com', foto: 'https://i.pravatar.cc/150?img=11' },
+  { id: '2', nombre: 'Juan Perez', correo: 'juan@gmail.com', foto: 'https://i.pravatar.cc/150?img=12' },
 ];
 
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const [search, setSearch] = useState('');
 
-  // Función para navegar
+  // Traemos funciones y estado del Store
+  const { buscarUsuario, usuarios, loadingBusqueda, limpiarBusqueda } = useUsuariosStore();
+
+  // Cada vez que cambia el texto 'search', llamamos al store
+  const handleSearch = (text) => {
+    setSearch(text);
+    buscarUsuario(text); // Esto busca en Supabase
+  };
+
+  // Limpiar búsqueda al salir
+  useEffect(() => {
+    return () => limpiarBusqueda();
+  }, []);
+
   const handleSelectUser = (usuario) => {
-    // Navegas a la pantalla nueva y le pasas el usuario seleccionado
     navigation.navigate('SelectPurpose', { 
         usuarioDestino: usuario 
     });
   };
 
-  // Renderizar cada item de la lista
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-        style={styles.contactItem}
-        onPress={() => handleSelectUser(item)} 
-    >
-      {/* Avatar */}
-      <Image source={{ uri: item.image }} style={styles.avatar} />
-      
-      {/* Info Central */}
-      <View style={styles.contactInfo}>
-        <Text style={styles.contactName}>{item.name}</Text>
-        <Text style={styles.contactEmail}>{item.email}</Text>
-      </View>
+  // --- LÓGICA DE DATOS A MOSTRAR ---
+  // Si hay texto en el buscador, mostramos resultados de Supabase.
+  // Si no, mostramos los recientes (Mock).
+  const dataToShow = search.length > 0 ? usuarios : RECENT_CONTACTS;
+  const listTitle = search.length > 0 ? "Resultados de búsqueda" : "Más recientes";
 
-      {/* Monto (Historial) */}
-      <Text style={styles.contactAmount}>{item.amount}</Text>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    // Manejo de imagen: si viene de BD puede ser null, usamos un placeholder
+    const imageUri = item.foto 
+        ? { uri: item.foto } 
+        : { uri: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }; // Avatar por defecto
+
+    return (
+      <TouchableOpacity 
+          style={styles.contactItem}
+          onPress={() => handleSelectUser(item)} 
+      >
+        {/* Avatar */}
+        <Image source={imageUri} style={styles.avatar} />
+        
+        {/* Info Central */}
+        <View style={styles.contactInfo}>
+          {/* Usamos item.nombre (nombre de la columna en BD) */}
+          <Text style={styles.contactName}>{item.nombre}</Text> 
+          
+          {/* Mostramos el teléfono si estamos buscando, o correo si es reciente */}
+          <Text style={styles.contactEmail}>
+             {search.length > 0 ? `Cel: ${item.telefono}` : item.correo}
+          </Text>
+        </View>
+
+        {/* Icono de flecha para indicar acción */}
+        <Ionicons name="chevron-forward" size={20} color="#ccc" />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#333" />
         </TouchableOpacity>
         <View style={styles.headerTitles}>
             <Text style={styles.title}>Elegir usuario</Text>
-            <Text style={styles.subtitle}>Seleccione su destinatario para enviar dinero.</Text>
+            <Text style={styles.subtitle}>Busca por número de celular (+51...)</Text>
         </View>
       </View>
 
-      {/* --- BODY (Tarjeta Blanca) --- */}
+      {/* BODY (Tarjeta Blanca) */}
       <View style={styles.whiteCard}>
         
         {/* Buscador */}
@@ -77,32 +105,42 @@ export default function SendMoneyScreen() {
           <Ionicons name="search" size={20} color="#ccc" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar por nombre o email..."
+            placeholder="Ingresa número de celular..."
             placeholderTextColor="#ccc"
             value={search}
-            onChangeText={setSearch}
+            onChangeText={handleSearch} // <--- Conectado a la función de búsqueda
+            keyboardType="phone-pad"    // <--- Teclado numérico
           />
+          {loadingBusqueda && <ActivityIndicator size="small" color="#347AF0" />}
         </View>
 
-        <Text style={styles.sectionTitle}>Más recientes</Text>
+        <Text style={styles.sectionTitle}>{listTitle}</Text>
 
-        {/* Lista de Contactos */}
+        {/* Lista de Contactos (Dinámica) */}
         <FlatList
-          data={RECENT_CONTACTS}
-          keyExtractor={(item) => item.id}
+          data={dataToShow}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+                {search.length > 0 ? "No se encontraron usuarios" : "No tienes contactos recientes"}
+            </Text>
+          }
         />
       </View>
 
-      {/* --- BOTÓN SCAN (Footer) --- */}
+      {/* FOOTER */}
       <View style={styles.scanContainer}>
-        <TouchableOpacity style={styles.scanButton}>
-          <MaterialCommunityIcons name="line-scan" size={32} color="white" />
+        <TouchableOpacity 
+          style={styles.scanButton}
+          onPress={() => navigation.navigate('QRScanner')} // <--- AQUÍ EL CAMBIO
+        >
+          <MaterialCommunityIcons name="qrcode-scan" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.scanText}>Escaner</Text>
+        <Text style={styles.scanText}>Escanear QR</Text>
       </View>
 
     </SafeAreaView>
@@ -185,6 +223,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 15,
+    backgroundColor: '#eee' // Color de fondo si la imagen carga lento
   },
   contactInfo: {
     flex: 1,
@@ -196,17 +235,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   contactEmail: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#888',
-  },
-  contactAmount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#E53935', // Rojo para egresos
   },
   separator: {
     height: 1,
     backgroundColor: '#F0F0F0',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#999',
+    fontStyle: 'italic'
   },
   // Botón flotante del escáner
   scanContainer: {

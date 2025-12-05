@@ -14,6 +14,7 @@ export const useUsuariosStore = create((set, get) => ({
   usuarioActual: null,
   usuarios: [],
   buscador: "",
+  loadingBusqueda: false,
 
   // ─────────────────────────────────────────────
   // REGISTRAR USUARIO CON TELÉFONO + CONTRASEÑA
@@ -81,12 +82,27 @@ export const useUsuariosStore = create((set, get) => ({
   // ─────────────────────────────────────────────
   // BUSCAR USUARIOS POR NOMBRE
   // ─────────────────────────────────────────────
-  buscarUsuarios: async (nombre) => {
-    set({ buscador: nombre });
-    const data = await BuscarUsuarios(nombre);
-    set({ usuarios: data });
-    return data;
+  buscarUsuario: async (telefono) => {
+    // Si el campo está vacío, limpiamos la lista
+    if (!telefono || telefono.length < 2) {
+        set({ usuarios: [] });
+        return;
+    }
+
+    set({ loadingBusqueda: true });
+    
+    const resultados = await BuscarUsuarios(telefono);
+    
+    // Filtramos para no mostrarnos a nosotros mismos en la búsqueda
+    // (Asumiendo que tienes el ID del usuario actual en el store)
+    const { usuarioActual } = get();
+    const resultadosFiltrados = resultados.filter(u => u.id !== usuarioActual?.id);
+
+    set({ usuarios: resultadosFiltrados, loadingBusqueda: false });
   },
+  
+  limpiarBusqueda: () => set({ usuarios: [] }),
+
 
   // ─────────────────────────────────────────────
   // SELECCIONAR USUARIO DE LA LISTA
@@ -124,5 +140,6 @@ export const useUsuariosStore = create((set, get) => ({
 
     return true;
   },
+  
 
 }));

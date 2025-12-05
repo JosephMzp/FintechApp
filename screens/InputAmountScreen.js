@@ -11,39 +11,57 @@ import {
   Platform,
   Alert
 } from 'react-native';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 export default function InputAmountScreen() {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // Recibimos los datos de la pantalla anterior
+  // 1. Recibimos los datos de la pantalla anterior
   const { usuarioDestino, purpose } = route.params || {};
 
   // Estado para el monto
   const [amount, setAmount] = useState('');
 
-  // Datos dummy por si entras directo sin pasar por el flujo (para pruebas)
-  const userDisplay = usuarioDestino || {
-    name: 'Mehedi Hasan',
-    email: 'helloyouthmind@gmail.com',
-    image: 'https://i.pravatar.cc/150?img=11'
+  // 2. Datos dummy de respaldo (por si entras directo a esta pantalla sin navegar)
+  const userFallback = {
+    nombre: 'Mehedi Hasan',
+    correo: 'helloyouthmind@gmail.com',
+    foto: 'https://i.pravatar.cc/150?img=11',
+    telefono: '+1 123 456 7890'
   };
 
+  // 3. Seleccionamos el usuario a mostrar (el real o el dummy)
+  const targetUser = usuarioDestino || userFallback;
+
+  // 4. Normalización de datos para visualización
+  const displayName = targetUser.nombre || targetUser.name || "Usuario Desconocido";
+  // Priorizamos teléfono, si no hay, email
+  const displayContact = targetUser.telefono || targetUser.phone || targetUser.correo || targetUser.email || "Sin contacto";
+  
+  // Imagen: aseguramos URI válida o placeholder
+  const displayImageUri = targetUser.foto || targetUser.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
   const handleContinue = () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    // Convertimos a float para validar
+    const numericAmount = parseFloat(amount);
+
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Monto inválido", "Por favor ingresa un monto mayor a 0.");
       return;
     }
 
     // Navegar a la pantalla de confirmación
     navigation.navigate('ConfirmPayment', { 
-        usuarioDestino: usuarioDestino,
+        usuarioDestino: targetUser, 
         purpose: purpose,
         amount: amount 
     });
   };
+
+  // Validar si el botón debe estar activo
+  const isButtonEnabled = amount.length > 0 && parseFloat(amount) > 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -53,9 +71,6 @@ export default function InputAmountScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Feather name="chevron-left" size={28} color="#1A1A1A" />
         </TouchableOpacity>
-        {/* En la imagen el título parece ser parte del flujo anterior, 
-            aquí ponemos algo acorde a la acción actual */}
-        {/* <Text style={styles.headerTitle}>Enviar Dinero</Text> */}
       </View>
 
       <KeyboardAvoidingView 
@@ -71,16 +86,16 @@ export default function InputAmountScreen() {
           {/* Avatar e Info del Usuario */}
           <View style={styles.userInfo}>
             <Image 
-              source={{ uri: userDisplay.image }} 
+              source={{ uri: displayImageUri }} 
               style={styles.avatar} 
             />
-            <Text style={styles.userName}>{userDisplay.name}</Text>
-            <Text style={styles.userEmail}>{userDisplay.email}</Text>
+            <Text style={styles.userName}>{displayName}</Text> 
+            <Text style={styles.userEmail}>{displayContact}</Text>
           </View>
 
           {/* Input de Dinero */}
           <View style={styles.amountContainer}>
-            {/* Selector de Moneda (Estático por ahora como en la imagen) */}
+            {/* Selector de Moneda */}
             <View style={styles.currencyBadge}>
               <Text style={styles.flag}>PEN</Text>
               <Feather name="chevron-down" size={16} color="#333" />
@@ -91,12 +106,11 @@ export default function InputAmountScreen() {
               style={styles.amountInput}
               placeholder="0.00"
               placeholderTextColor="#ccc"
-              keyboardType="numeric"
+              keyboardType="numeric" // Teclado numérico
               value={amount}
               onChangeText={setAmount}
-              autoFocus={true}
+              autoFocus={true} // Enfocar al abrir
             />
-            {/* Línea inferior decorativa */}
             <View style={styles.underline} />
           </View>
 
@@ -104,10 +118,10 @@ export default function InputAmountScreen() {
           <TouchableOpacity 
             style={[
               styles.continueButton, 
-              !amount && styles.disabledButton // Estilo deshabilitado si no hay monto
+              !isButtonEnabled && styles.disabledButton 
             ]} 
             onPress={handleContinue}
-            disabled={!amount}
+            disabled={!isButtonEnabled}
           >
             <Text style={styles.continueText}>Continuar</Text>
           </TouchableOpacity>
@@ -158,7 +172,6 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
     alignItems: 'center',
-    // Sombras
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -175,7 +188,8 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#F0F0F0'
+    borderColor: '#F0F0F0',
+    backgroundColor: '#eee'
   },
   userName: {
     fontSize: 18,
@@ -204,8 +218,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   flag: {
-    fontSize: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
     marginRight: 4,
+    color: '#333'
   },
   amountInput: {
     fontSize: 48,
@@ -236,7 +252,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   disabledButton: {
-    backgroundColor: '#A0C4FF', // Color más claro cuando está deshabilitado
+    backgroundColor: '#A0C4FF', 
     shadowOpacity: 0,
     elevation: 0,
   },

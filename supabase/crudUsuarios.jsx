@@ -55,12 +55,36 @@ export const EliminarUsuarios = async (id) => {
   return true;
 };
 
-export const BuscarUsuarios = async (nombre) => {
+export const BuscarUsuarios = async (telefono) => {
   const { data, error } = await supabase
     .from("usuarios")
     .select("*")
-    .ilike("nombre", `%${nombre}%`);
+    .ilike("telefono", `%${telefono}%`)
+    .limit(10);
 
   if (error) throw error;
   return data;
+};
+
+export const ObtenerCuentaPorUsuario = async (userId) => {
+  try {
+    console.log("Buscando cuenta destino para usuario:", userId);
+    const { data, error } = await supabase
+      .from("cuentas")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("moneda", "S/")
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error obteniendo cuenta destino:", error);
+      
+      return null;
+    }
+    return data;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 };

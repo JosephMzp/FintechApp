@@ -15,47 +15,46 @@ export default function TransactionSuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   
-  const { transaccionId, amount, usuarioDestino, tarjetaUsada } = route.params || {};
-
-  // Formato de fecha actual
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
-  const timeStr = today.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const { transaccionId, amount, usuarioDestino, tarjetaUsada, fecha, hora } = route.params || {};
 
   const isMaster = tarjetaUsada?.numero?.startsWith("5");
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Botón X para cerrar todo el flujo */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Feather name="chevron-left" size={28} color="#333" />
+          <Feather name="x" size={28} color="#333" />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         
-        {/* Banner Verde */}
+        {/* Banner de Éxito */}
         <View style={styles.successBanner}>
-          <Ionicons name="checkmark-circle" size={24} color="#15803d" />
-          <Text style={styles.successText}>
-            Transaction Complete! - {dateStr} at {timeStr}
-          </Text>
+          <Ionicons name="checkmark-circle" size={28} color="#15803d" />
+          <View style={{marginLeft: 10}}>
+            <Text style={styles.successTitle}>¡Transacción Completada!</Text>
+            <Text style={styles.successDate}>{fecha} a las {hora}</Text>
+          </View>
         </View>
 
-        {/* Tarjeta Central */}
+        {/* Info Central */}
         <View style={styles.infoCard}>
           <Image 
-            source={{ uri: usuarioDestino?.image || 'https://i.pravatar.cc/150?img=3' }} 
+            source={{ uri: usuarioDestino?.foto || 'https://i.pravatar.cc/150?img=3' }} 
             style={styles.avatar} 
           />
-          <Text style={styles.userName}>{usuarioDestino?.name || "Usuario"}</Text>
-          <Text style={styles.userEmail}>{usuarioDestino?.email || "email@test.com"}</Text>
+          <Text style={styles.userName}>{usuarioDestino?.nombre}</Text>
+          <Text style={styles.userEmail}>{usuarioDestino?.correo}</Text>
           
-          <Text style={styles.txIdLabel}>Coinpay Transaction ID: {transaccionId}</Text>
+          <Text style={styles.amountText}>S/ {amount}</Text>
+          
+          <Text style={styles.txIdLabel}>ID Transacción: {transaccionId}</Text>
         </View>
 
-        {/* Información de la cuenta */}
-        <Text style={styles.sectionTitle}>Account</Text>
+        {/* Tarjeta Usada */}
+        <Text style={styles.sectionTitle}>Pagado con</Text>
         <View style={styles.accountRow}>
            <FontAwesome 
               name={isMaster ? "cc-mastercard" : "cc-visa"} 
@@ -63,32 +62,18 @@ export default function TransactionSuccessScreen() {
               color={isMaster ? "#EB001B" : "#1A1F71"} 
             />
             <Text style={styles.accountText}>
-              Account ************{tarjetaUsada?.numero?.slice(-4) || "0000"}
+              Tarjeta ************{tarjetaUsada?.numero?.slice(-4) || "0000"}
             </Text>
         </View>
 
-        {/* Espaciador */}
         <View style={{ height: 40 }} />
 
-        {/* Botones de acción */}
         <TouchableOpacity 
           style={styles.primaryButton}
           onPress={() => navigation.navigate("Home")}
         >
-          <Text style={styles.primaryButtonText}>Back to Homepage</Text>
+          <Text style={styles.primaryButtonText}>Volver al Inicio</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate("SendMoney")} // O volver al inicio del flujo
-        >
-          <Text style={styles.secondaryButtonText}>Make another Payment</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          Thank you for using our app to send money. If you have any questions, 
-          please don't hesitate to <Text style={styles.link}>contact us</Text>.
-        </Text>
 
       </ScrollView>
     </SafeAreaView>
@@ -102,18 +87,21 @@ const styles = StyleSheet.create({
   
   successBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#DCFCE7', borderRadius: 12, padding: 15, marginBottom: 25
+    backgroundColor: '#DCFCE7', borderRadius: 16, padding: 20, marginBottom: 25,
+    borderWidth: 1, borderColor: '#bbf7d0'
   },
-  successText: { color: '#166534', fontWeight: '600', marginLeft: 8, fontSize: 13 },
+  successTitle: { color: '#166534', fontWeight: 'bold', fontSize: 16 },
+  successDate: { color: '#166534', fontSize: 13, marginTop: 2 },
 
   infoCard: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 30, alignItems: 'center',
     marginBottom: 30,
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2,
   },
-  avatar: { width: 70, height: 70, borderRadius: 35, marginBottom: 12 },
+  avatar: { width: 70, height: 70, borderRadius: 35, marginBottom: 12, backgroundColor: '#eee' },
   userName: { fontSize: 20, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 4 },
-  userEmail: { fontSize: 14, color: '#888', marginBottom: 10 },
+  userEmail: { fontSize: 14, color: '#888', marginBottom: 15 },
+  amountText: { fontSize: 32, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 10 },
   txIdLabel: { fontSize: 12, color: '#347AF0', fontWeight: '500' },
 
   sectionTitle: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 10 },
@@ -125,16 +113,7 @@ const styles = StyleSheet.create({
 
   primaryButton: {
     backgroundColor: '#347AF0', paddingVertical: 16, borderRadius: 30, alignItems: 'center',
-    marginBottom: 15
+    marginBottom: 15, shadowColor: "#347AF0", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
   primaryButtonText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' },
-
-  secondaryButton: {
-    backgroundColor: '#FFF', paddingVertical: 16, borderRadius: 30, alignItems: 'center',
-    borderWidth: 1, borderColor: '#347AF0', marginBottom: 25
-  },
-  secondaryButtonText: { color: '#347AF0', fontSize: 16, fontWeight: 'bold' },
-
-  footerText: { textAlign: 'center', color: '#888', fontSize: 12, lineHeight: 18, paddingHorizontal: 10 },
-  link: { color: '#347AF0', fontWeight: 'bold' }
 });

@@ -39,6 +39,8 @@ import SelectPurposeScreen from "./screens/SelectTipoScreen";
 import InputAmountScreen from "./screens/InputAmountScreen";
 import ConfirmPaymentScreen from "./screens/ConfirmPaymentScreen";
 import TransactionSuccessScreen from "./screens/TransactionSuccessScreen";
+import MyQRScreen from "./screens/MyQRScreen";
+import QRScannerScreen from "./screens/QRScannerScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -100,9 +102,12 @@ export default function App() {
         <Stack.Screen name="SelectPurpose" component={SelectPurposeScreen} />
         <Stack.Screen name="InputAmount" component={InputAmountScreen} />
         <Stack.Screen name="ConfirmPayment" component={ConfirmPaymentScreen} />
-        <Stack.Screen
-          name="TransactionSuccess" component={TransactionSuccessScreen}
+        <Stack.Screen name="TransactionSuccess" component={TransactionSuccessScreen}
           options={{ headerShown: false }}/>
+
+        {/* QR y Escaner */}
+        <Stack.Screen name="MyQR" component={MyQRScreen} />
+        <Stack.Screen name="QRScanner" component={QRScannerScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
