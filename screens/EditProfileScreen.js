@@ -11,9 +11,12 @@ import {
 import Icon from "react-native-vector-icons/Feather";
 import { useUsuariosStore } from "../store/UsuarioStore";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../context/ThemeContext"; // ⭐ IMPORTANTE
 
 const EditUserInfoScreen = () => {
   const navigation = useNavigation();
+  const { isDark } = useTheme(); // ⭐ MODO OSCURO
+
   const { usuarioActual, obtenerUsuarioActual, actualizarUsuario } =
     useUsuariosStore();
 
@@ -53,53 +56,116 @@ const EditUserInfoScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* HEADER CON BOTÓN ATRÁS */}
+    <ScrollView
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#121212" : "#f8f9ff" }, // ⭐ CAMBIO
+      ]}
+    >
+      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={26} />
+          <Icon
+            name="arrow-left"
+            size={26}
+            color={isDark ? "#fff" : "#000"} // ⭐ CAMBIO
+          />
         </TouchableOpacity>
-        <Text style={styles.title}>Editar información personal</Text>
+
+        <Text
+          style={[
+            styles.title,
+            { color: isDark ? "#fff" : "#000" }, // ⭐ CAMBIO
+          ]}
+        >
+          Editar información personal
+        </Text>
       </View>
 
-      {/* CAMPOS DE EDICIÓN */}
-      <Text style={styles.label}>Nombre completo</Text>
+      {/* CAMPOS */}
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        Nombre completo
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1e1e1e" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#ddd",
+          },
+        ]}
         value={form.nombre}
         onChangeText={(v) => setForm({ ...form, nombre: v })}
       />
 
-      <Text style={styles.label}>Teléfono</Text>
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        Teléfono
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1e1e1e" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#ddd",
+          },
+        ]}
         value={form.telefono}
         onChangeText={(v) => setForm({ ...form, telefono: v })}
         keyboardType="phone-pad"
       />
 
-      <Text style={styles.label}>Dirección</Text>
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        Dirección
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1e1e1e" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#ddd",
+          },
+        ]}
         value={form.direccion}
         onChangeText={(v) => setForm({ ...form, direccion: v })}
       />
 
-      <Text style={styles.label}>Ciudad</Text>
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        Ciudad
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1e1e1e" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#ddd",
+          },
+        ]}
         value={form.ciudad}
         onChangeText={(v) => setForm({ ...form, ciudad: v })}
       />
 
-      <Text style={styles.label}>Código Postal</Text>
+      <Text style={[styles.label, { color: isDark ? "#ddd" : "#333" }]}>
+        Código Postal
+      </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1e1e1e" : "#fff",
+            color: isDark ? "#fff" : "#000",
+            borderColor: isDark ? "#444" : "#ddd",
+          },
+        ]}
         value={form.codigo_postal}
         onChangeText={(v) => setForm({ ...form, codigo_postal: v })}
         keyboardType="number-pad"
       />
 
+      {/* BOTÓN GUARDAR */}
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Guardar cambios</Text>
       </TouchableOpacity>
@@ -110,19 +176,36 @@ const EditUserInfoScreen = () => {
 export default EditUserInfoScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9ff", padding: 20 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  title: { fontSize: 20, fontWeight: "bold", marginLeft: 10 },
-  label: { fontSize: 15, marginTop: 10, color: "#333" },
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+
+  label: {
+    fontSize: 15,
+    marginTop: 10,
+  },
+
   input: {
-    backgroundColor: "#fff",
     padding: 12,
     borderRadius: 10,
     marginTop: 5,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ddd",
   },
+
   button: {
     backgroundColor: "#3b82f6",
     padding: 15,
@@ -130,5 +213,10 @@ const styles = StyleSheet.create({
     marginTop: 30,
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
 });

@@ -3,6 +3,9 @@ import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+// CONTEXTO GLOBAL DEL TEMA (MODO OSCURO)
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
+
 // Onboarding
 import Onboarding1 from "./screens/Onboarding1";
 import Onboarding2 from "./screens/Onboarding2";
@@ -33,7 +36,7 @@ import AddCardIntroScreen from "./screens/AddCardIntroScreen";
 import AddCardFormScreen from "./screens/AddCardFormScreen";
 import CardListScreen from "./screens/CardListScreen";
 
-//Transacciones
+// Transacciones
 import SendMoneyScreen from "./screens/SendMoneyScreen";
 import SelectPurposeScreen from "./screens/SelectTipoScreen";
 import InputAmountScreen from "./screens/InputAmountScreen";
@@ -41,13 +44,32 @@ import ConfirmPaymentScreen from "./screens/ConfirmPaymentScreen";
 import TransactionSuccessScreen from "./screens/TransactionSuccessScreen";
 import MyQRScreen from "./screens/MyQRScreen";
 import QRScannerScreen from "./screens/QRScannerScreen";
+import PrivacidadSeguridad from "./screens/PrivacidadSeguridad";
+import TransacScreen from "./screens/TransacScreen";
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
+// ------------------------------
+// ENVOLTURA PARA APLICAR EL TEMA
+// ------------------------------
+function AppNavigation() {
+  const { isDark } = useTheme();
+
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
+    <NavigationContainer
+      theme={{
+        dark: isDark,
+        colors: {
+          background: isDark ? "#0d0d0d" : "#ffffff",
+          card: isDark ? "#1a1a1a" : "#ffffff",
+          text: isDark ? "#ffffff" : "#000000",
+          border: isDark ? "#333333" : "#e5e5e5",
+          primary: "#347AF0",
+        },
+      }}
+    >
+      <StatusBar style={isDark ? "light" : "dark"} />
+
       <Stack.Navigator
         initialRouteName="Onboarding1"
         screenOptions={{ headerShown: false }}
@@ -102,14 +124,31 @@ export default function App() {
         <Stack.Screen name="SelectPurpose" component={SelectPurposeScreen} />
         <Stack.Screen name="InputAmount" component={InputAmountScreen} />
         <Stack.Screen name="ConfirmPayment" component={ConfirmPaymentScreen} />
-        <Stack.Screen name="TransactionSuccess" component={TransactionSuccessScreen}
-          options={{ headerShown: false }}/>
+        <Stack.Screen
+          name="TransactionSuccess"
+          component={TransactionSuccessScreen}
+          options={{ headerShown: false }}
+        />
 
-        {/* QR y Escaner */}
+        {/* QR */}
         <Stack.Screen name="MyQR" component={MyQRScreen} />
         <Stack.Screen name="QRScanner" component={QRScannerScreen} />
+        <Stack.Screen name="priv" component={PrivacidadSeguridad} />
+        <Stack.Screen name="TransacScreen" component={TransacScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+// ------------------------------
+//     APP PRINCIPAL FINAL
+// ------------------------------
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppNavigation />
+    </ThemeProvider>
   );
 }
 

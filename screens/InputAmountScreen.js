@@ -13,18 +13,18 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTheme } from "../context/ThemeContext"; // ⬅️ MODO OSCURO
 
 export default function InputAmountScreen() {
+
+  const { isDark } = useTheme(); // ⬅️ LEER EL TEMA
   const navigation = useNavigation();
   const route = useRoute();
 
-  // 1. Recibimos los datos de la pantalla anterior
   const { usuarioDestino, purpose } = route.params || {};
 
-  // Estado para el monto
   const [amount, setAmount] = useState('');
 
-  // 2. Datos dummy de respaldo (por si entras directo a esta pantalla sin navegar)
   const userFallback = {
     nombre: 'Mehedi Hasan',
     correo: 'helloyouthmind@gmail.com',
@@ -32,19 +32,13 @@ export default function InputAmountScreen() {
     telefono: '+1 123 456 7890'
   };
 
-  // 3. Seleccionamos el usuario a mostrar (el real o el dummy)
   const targetUser = usuarioDestino || userFallback;
 
-  // 4. Normalización de datos para visualización
   const displayName = targetUser.nombre || targetUser.name || "Usuario Desconocido";
-  // Priorizamos teléfono, si no hay, email
   const displayContact = targetUser.telefono || targetUser.phone || targetUser.correo || targetUser.email || "Sin contacto";
-  
-  // Imagen: aseguramos URI válida o placeholder
   const displayImageUri = targetUser.foto || targetUser.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
   const handleContinue = () => {
-    // Convertimos a float para validar
     const numericAmount = parseFloat(amount);
 
     if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
@@ -52,78 +46,72 @@ export default function InputAmountScreen() {
       return;
     }
 
-    // Navegar a la pantalla de confirmación
     navigation.navigate('ConfirmPayment', { 
-        usuarioDestino: targetUser, 
-        purpose: purpose,
-        amount: amount 
+      usuarioDestino: targetUser, 
+      purpose,
+      amount
     });
   };
 
-  // Validar si el botón debe estar activo
   const isButtonEnabled = amount.length > 0 && parseFloat(amount) > 0;
 
+  const dynamic = styles(isDark); // ⬅️ estilos dinámicos
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={dynamic.container}>
       
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Feather name="chevron-left" size={28} color="#1A1A1A" />
+      <View style={dynamic.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={dynamic.backButton}>
+          <Feather name="chevron-left" size={28} color={isDark ? "#fff" : "#1A1A1A"} />
         </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.content}
+        style={dynamic.content}
       >
-        <Text style={styles.pageTitle}>Ingresa el Monto</Text>
-        <Text style={styles.pageSubtitle}>Ingresa la cantidad que deseas enviar</Text>
+        <Text style={dynamic.pageTitle}>Ingresa el Monto</Text>
+        <Text style={dynamic.pageSubtitle}>Ingresa la cantidad que deseas enviar</Text>
 
-        {/* Tarjeta Blanca Principal */}
-        <View style={styles.card}>
+        <View style={dynamic.card}>
           
-          {/* Avatar e Info del Usuario */}
-          <View style={styles.userInfo}>
+          <View style={dynamic.userInfo}>
             <Image 
               source={{ uri: displayImageUri }} 
-              style={styles.avatar} 
+              style={dynamic.avatar} 
             />
-            <Text style={styles.userName}>{displayName}</Text> 
-            <Text style={styles.userEmail}>{displayContact}</Text>
+            <Text style={dynamic.userName}>{displayName}</Text> 
+            <Text style={dynamic.userEmail}>{displayContact}</Text>
           </View>
 
-          {/* Input de Dinero */}
-          <View style={styles.amountContainer}>
-            {/* Selector de Moneda */}
-            <View style={styles.currencyBadge}>
-              <Text style={styles.flag}>PEN</Text>
-              <Feather name="chevron-down" size={16} color="#333" />
+          <View style={dynamic.amountContainer}>
+            
+            <View style={dynamic.currencyBadge}>
+              <Text style={dynamic.flag}>PEN</Text>
+              <Feather name="chevron-down" size={16} color={isDark ? "#ddd" : "#333"} />
             </View>
 
-            {/* Input Numérico */}
             <TextInput
-              style={styles.amountInput}
+              style={dynamic.amountInput}
               placeholder="0.00"
-              placeholderTextColor="#ccc"
-              keyboardType="numeric" // Teclado numérico
+              placeholderTextColor={isDark ? "#666" : "#ccc"}
+              keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}
-              autoFocus={true} // Enfocar al abrir
+              autoFocus={true}
             />
-            <View style={styles.underline} />
+            <View style={dynamic.underline} />
           </View>
 
-          {/* Botón Continuar */}
           <TouchableOpacity 
             style={[
-              styles.continueButton, 
-              !isButtonEnabled && styles.disabledButton 
+              dynamic.continueButton, 
+              !isButtonEnabled && dynamic.disabledButton 
             ]} 
             onPress={handleContinue}
             disabled={!isButtonEnabled}
           >
-            <Text style={styles.continueText}>Continuar</Text>
+            <Text style={dynamic.continueText}>Continuar</Text>
           </TouchableOpacity>
 
         </View>
@@ -132,10 +120,10 @@ export default function InputAmountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = (isDark) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FD',
+    backgroundColor: isDark ? "#121212" : '#F8F9FD',
   },
   header: {
     paddingHorizontal: 20,
@@ -157,26 +145,25 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: isDark ? "#fff" : '#1A1A1A',
     marginBottom: 5,
   },
   pageSubtitle: {
     fontSize: 15,
-    color: '#757575',
+    color: isDark ? "#bbb" : '#757575',
     marginBottom: 30,
   },
-  // Tarjeta Blanca Central
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: isDark ? "#1E1E1E" : '#FFFFFF',
     borderRadius: 24,
     paddingVertical: 40,
     paddingHorizontal: 20,
     alignItems: 'center',
-    shadowColor: "#000",
+    shadowColor: isDark ? "transparent" : "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: isDark ? 0 : 0.08,
     shadowRadius: 10,
-    elevation: 5,
+    elevation: isDark ? 0 : 5,
   },
   userInfo: {
     alignItems: 'center',
@@ -188,21 +175,19 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
+    borderColor: isDark ? "#333" : '#F0F0F0',
     backgroundColor: '#eee'
   },
   userName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: isDark ? "#fff" : '#1A1A1A',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 13,
-    color: '#888',
+    color: isDark ? "#aaa" : '#888',
   },
-  
-  // Sección del Input
   amountContainer: {
     width: '100%',
     alignItems: 'center',
@@ -211,7 +196,7 @@ const styles = StyleSheet.create({
   currencyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: isDark ? "#2A2A2A" : '#F5F5F5',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 15,
@@ -221,12 +206,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginRight: 4,
-    color: '#333'
+    color: isDark ? "#fff" : '#333'
   },
   amountInput: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: isDark ? "#fff" : '#1A1A1A',
     textAlign: 'center',
     width: '80%',
     paddingVertical: 10,
@@ -234,26 +219,19 @@ const styles = StyleSheet.create({
   underline: {
     width: '60%',
     height: 2,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: isDark ? "#444" : '#E0E0E0',
     marginTop: -5, 
   },
-
-  // Botón
   continueButton: {
     width: '100%',
     backgroundColor: '#347AF0',
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: 'center',
-    shadowColor: "#347AF0",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
     elevation: 6,
   },
   disabledButton: {
-    backgroundColor: '#A0C4FF', 
-    shadowOpacity: 0,
+    backgroundColor: '#A0C4FF',
     elevation: 0,
   },
   continueText: {

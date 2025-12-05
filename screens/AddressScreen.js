@@ -12,7 +12,14 @@ import { useRegisterStore } from "../store/RegistroStore";
 import { useUsuariosStore } from "../store/UsuarioStore";
 import Icon from "react-native-vector-icons/Ionicons";
 
+// ⭐ CAMBIO PARA MODO OSCURO
+import { useTheme } from "../context/ThemeContext";
+
 export default function AddressScreen({ navigation }) {
+
+  // ⭐ MODO OSCURO
+  const { isDark } = useTheme();
+
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
@@ -83,41 +90,80 @@ export default function AddressScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-
+    <View
+      style={[
+        styles.container,
+        {
+          // ⭐ FONDO MODO OSCURO
+          backgroundColor: isDark ? "#121212" : "#fff",
+        },
+      ]}
+    >
       {/* BOTÓN REGRESAR */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={26} color="#000" />
+        <Icon
+          name="arrow-back"
+          size={26}
+          color={isDark ? "#fff" : "#000"} // ⭐
+        />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Dirección domiciliaria</Text>
-      <Text style={styles.subtitle}>
+      <Text style={[styles.title, { color: isDark ? "#fff" : "#000" }]}>
+        Dirección domiciliaria
+      </Text>
+
+      <Text style={[styles.subtitle, { color: isDark ? "#bbb" : "#666" }]}>
         Esta información debe coincidir con tu documento de identidad.
       </Text>
 
-      <Text style={styles.label}>Dirección</Text>
+      <Text style={[styles.label, { color: isDark ? "#ccc" : "#555" }]}>Dirección</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            // ⭐ INPUT MODO OSCURO
+            backgroundColor: isDark ? "#1E1E1E" : "#fff",
+            borderColor: isDark ? "#444" : "#ddd",
+            color: isDark ? "#fff" : "#000",
+          },
+        ]}
         value={address}
         onChangeText={setAddress}
         placeholder="Ej. Av. Larco 123"
+        placeholderTextColor={isDark ? "#888" : "#999"} // ⭐
       />
 
-      <Text style={styles.label}>Ciudad</Text>
+      <Text style={[styles.label, { color: isDark ? "#ccc" : "#555" }]}>Ciudad</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1E1E1E" : "#fff",
+            borderColor: isDark ? "#444" : "#ddd",
+            color: isDark ? "#fff" : "#000",
+          },
+        ]}
         value={city}
         onChangeText={handleCityChange}
         placeholder="Ej. Lima"
+        placeholderTextColor={isDark ? "#888" : "#999"}
       />
 
-      <Text style={styles.label}>Código Postal</Text>
+      <Text style={[styles.label, { color: isDark ? "#ccc" : "#555" }]}>Código Postal</Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: isDark ? "#1E1E1E" : "#fff",
+            borderColor: isDark ? "#444" : "#ddd",
+            color: isDark ? "#fff" : "#000",
+          },
+        ]}
         value={postcode}
         onChangeText={handlePostcodeChange}
         placeholder="Ej. 15036"
         keyboardType="numeric"
+        placeholderTextColor={isDark ? "#888" : "#999"}
       />
 
       <TouchableOpacity
@@ -137,14 +183,13 @@ export default function AddressScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 25, backgroundColor: "#fff" },
+  container: { flex: 1, padding: 25 },
   backButton: { marginBottom: 10 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  subtitle: { color: "#666", marginBottom: 20 },
-  label: { color: "#555", marginBottom: 5 },
+  subtitle: { marginBottom: 20 },
+  label: { marginBottom: 5 },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,

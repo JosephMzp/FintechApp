@@ -1,182 +1,239 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
-  Image
+  Modal,
+  Pressable,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons, FontAwesome } from "@expo/vector-icons"; // Asegúrate de tener iconos
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../supabase/supabase.config";
 import { useTarjetaStore } from "../store/TarjetaStore";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
+import { useTheme } from "../context/ThemeContext";   // ⭐ NUEVO
 
 export default function CardListScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  
-  // Detectamos si venimos de "Agregar Tarjeta" para mostrar el mensaje verde
+  const { isDark } = useTheme();   // ⭐ NUEVO
+
   const showSuccessMessage = route?.params?.showSuccess ?? false;
 
   const { tarjetas, listarTarjetas, eliminarTarjeta, loading } = useTarjetaStore();
   const [userId, setUserId] = useState(null);
 
-  // 1. Cargar las tarjetas al entrar
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tarjetaAEliminar, setTarjetaAEliminar] = useState(null);
+
   useFocusEffect(
-  useCallback(() => {
-    let mounted = true;
+    useCallback(() => {
+      const fetchCards = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
 
-    const fetchCards = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+          const { data: datosUsuario } = await supabase
+            .from("usuarios")
+            .select("id")
+            .eq("idauth", user.id)
+            .single();
 
-        const { data: datosUsuario } = await supabase
-          .from("usuarios")
-          .select("id")
-          .eq("idauth", user.id)
-          .single();
+          if (!datosUsuario) return;
 
-        if (!datosUsuario) return;
-        const idNumerico = datosUsuario.id;
-        setUserId(idNumerico);
+          const idNumerico = datosUsuario.id;
+          setUserId(idNumerico);
 
-        await listarTarjetas(idNumerico); // actualiza store y tarjetas
-      } catch (e) {
-        console.log("Error cargando tarjetas", e);
-      }
-    };
-
-    fetchCards();
-
-    // cleanup
-    return () => {
-      mounted = false;
-    };
-  }, [route?.params?._refreshAt]) // <-- dependemos del param _refreshAt para forzar el re-run
-);
-
- // Se ejecuta al montar
-
-  // 2. Función para confirmar borrado
-  const handleDelete = (id) => {
-    Alert.alert(
-      "Eliminar tarjeta",
-      "¿Estás seguro de que quieres eliminar esta tarjeta?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Eliminar", 
-          style: "destructive", 
-          onPress: async () => {
-            await eliminarTarjeta(id);
-            // Si quieres recargar la lista explícitamente:
-            // if (userId) listarTarjetas(userId);
-          } 
+          await listarTarjetas(idNumerico);
+        } catch (e) {
+          console.log("Error cargando tarjetas", e);
         }
-      ]
-    );
+      };
+
+      fetchCards();
+    }, [route?.params?._refreshAt])
+  );
+
+  const handleDelete = (id) => {
+    setTarjetaAEliminar(id);
+    setModalVisible(true);
   };
 
-  // 3. Renderizar cada tarjeta
+  const confirmarEliminacion = async () => {
+    await eliminarTarjeta(tarjetaAEliminar);
+    setModalVisible(false);
+    setTarjetaAEliminar(null);
+  };
+
   const renderItem = ({ item }) => {
-    // Detectar tipo de tarjeta simple (4=Visa, 5=Mastercard)
     const isMaster = item.numero.startsWith("5");
     const iconName = isMaster ? "cc-mastercard" : "cc-visa";
     const iconColor = isMaster ? "#EB001B" : "#1A1F71";
 
-    // Enmascarar número (**** **** **** 1234)
-    const last4 = item.numero.slice(-4); 
+    const last4 = item.numero.slice(-4);
 
     return (
-      <View style={styles.cardItem}>
-        {/* Icono de la tarjeta */}
+      <View
+        style={[
+          styles.cardItem,
+          { backgroundColor: isDark ? "#1A1A1A" : "#FFF" } // ⭐ NUEVO
+        ]}
+      >
+
         <View style={styles.cardIconContainer}>
-            <FontAwesome name={iconName} size={24} color={iconColor} />
+          <FontAwesome name={iconName} size={24} color={iconColor} />
         </View>
 
-        {/* Texto de la cuenta */}
         <View style={styles.cardInfo}>
-            <Text style={styles.accountLabel}>Account</Text>
-            <Text style={styles.cardNumber}>•••• •••• •••• {last4}</Text>
+          <Text
+            style={[
+              styles.accountLabel,
+              { color: isDark ? "#AAA" : "#888" } // ⭐ NUEVO
+            ]}
+          >
+            Cuenta
+          </Text>
+
+          <Text
+            style={[
+              styles.cardNumber,
+              { color: isDark ? "#FFF" : "#333" } // ⭐ NUEVO
+            ]}
+          >
+            •••• •••• •••• {last4}
+          </Text>
         </View>
 
-        {/* Botón Eliminar (Tacho rojo) */}
-        <TouchableOpacity 
-            style={styles.deleteButton} 
-            onPress={() => handleDelete(item.id)}
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDelete(item.id)}
         >
-            <Ionicons name="trash-outline" size={20} color="#fff" />
+          <Ionicons name="trash-outline" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      
-      {/* HEADER */}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "#0D0D0D" : "#F8F9FD" } // ⭐ NUEVO
+      ]}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.backButton}>
-             <Ionicons name="chevron-back" size={24} color="#333" />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color={isDark ? "#FFF" : "#333"} /> 
         </TouchableOpacity>
-        {/* Si hay mensaje de éxito, ajustamos el layout si quieres, o dejamos titulo */}
       </View>
 
-      {/* MENSAJE DE ÉXITO (Solo si showSuccess es true) */}
       {showSuccessMessage && (
         <View style={styles.successBanner}>
-            <Ionicons name="checkmark-circle" size={24} color="#15803d" />
-            <Text style={styles.successText}>Your card successfully added</Text>
+          <Ionicons name="checkmark-circle" size={24} color="#15803d" />
+          <Text style={styles.successText}>Tu tarjeta fue agregada correctamente</Text>
         </View>
       )}
 
-      <Text style={styles.title}>Card list</Text>
-      <Text style={styles.subtitle}>Enter your credit card info into the box below.</Text>
+      <Text
+        style={[
+          styles.title,
+          { color: isDark ? "#FFF" : "#333" } // ⭐ NUEVO
+        ]}
+      >
+        Lista de tarjetas
+      </Text>
 
-      {/* LISTA DE TARJETAS */}
+      <Text
+        style={[
+          styles.subtitle,
+          { color: isDark ? "#AAA" : "#666" } // ⭐ NUEVO
+        ]}
+      >
+        Ingresa la información de tu tarjeta en la caja de abajo.
+      </Text>
+
       {loading && tarjetas.length === 0 ? (
-        <ActivityIndicator size="large" color="#347AF0" style={{marginTop: 50}} />
+        <ActivityIndicator size="large" color="#347AF0" style={{ marginTop: 50 }} />
       ) : (
         <FlatList
-            data={tarjetas}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-                <Text style={styles.emptyText}>No tienes tarjetas guardadas.</Text>
-            }
+          data={tarjetas}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={[styles.emptyText, { color: isDark ? "#777" : "#aaa" }]}>
+              No tienes tarjetas guardadas.
+            </Text>
+          }
         />
       )}
 
-      {/* FOOTER - BOTONES */}
       <View style={styles.footer}>
-        
-        {/* Botón 1: Añadir otra */}
-        <TouchableOpacity 
-            style={styles.addButton} 
-            onPress={() => navigation.navigate("AddCardForm")} // Asegúrate que así se llama tu ruta de agregar
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate("AddCardForm")}
         >
-            <Ionicons name="add" size={24} color="#fff" />
-            <Text style={styles.addButtonText}>Add another card</Text>
+          <Ionicons name="add" size={24} color="#fff" />
+          <Text style={styles.addButtonText}>Agregar otra tarjeta</Text>
         </TouchableOpacity>
 
-        {/* Botón 2: Continuar (Solo visible si es flujo de éxito) */}
         {showSuccessMessage && (
-            <TouchableOpacity 
-                style={styles.continueButton}
-                onPress={() => navigation.navigate("Home")} // O a donde deban ir después
-            >
-                <Text style={styles.continueButtonText}>Continue</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={() => navigation.navigate("Home")}
+          >
+            <Text style={styles.continueButtonText}>Continuar</Text>
+          </TouchableOpacity>
         )}
-
       </View>
+
+      <Modal transparent visible={modalVisible} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalBox,
+              { backgroundColor: isDark ? "#1A1A1A" : "#FFF" } // ⭐ NUEVO
+            ]}
+          >
+            <Text
+              style={[
+                styles.modalTitle,
+                { color: isDark ? "#FFF" : "#111" } // ⭐ NUEVO
+              ]}
+            >
+              Eliminar tarjeta
+            </Text>
+
+            <Text
+              style={[
+                styles.modalText,
+                { color: isDark ? "#DDD" : "#444" } // ⭐ NUEVO
+              ]}
+            >
+              ¿Estás seguro de que deseas eliminar esta tarjeta?
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalBtn, { backgroundColor: "#e5e7eb" }]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={[styles.modalBtnText, { color: "#374151" }]}>No</Text>
+              </Pressable>
+
+              <Pressable
+                style={[styles.modalBtn, { backgroundColor: "#EF4444" }]}
+                onPress={confirmarEliminacion}
+              >
+                <Text style={[styles.modalBtnText, { color: "#fff" }]}>Sí</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -184,7 +241,6 @@ export default function CardListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FD", // Color de fondo gris muy claro
     paddingTop: 50,
     paddingHorizontal: 20,
   },
@@ -195,15 +251,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   successBanner: {
-    flexDirection: 'row',
-    backgroundColor: "#DCFCE7", // Verde claro fondo
+    flexDirection: "row",
+    backgroundColor: "#DCFCE7",
     padding: 15,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   successText: {
-    color: "#166534", // Verde oscuro texto
+    color: "#166534",
     fontWeight: "600",
     marginLeft: 10,
     fontSize: 14,
@@ -211,30 +267,21 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 5,
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 20,
   },
   listContent: {
     paddingBottom: 100,
   },
-  // ESTILOS DE LA TARJETA (ITEM)
   cardItem: {
     flexDirection: "row",
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 15,
     alignItems: "center",
     marginBottom: 15,
-    // Sombra suave
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
     elevation: 2,
   },
   cardIconContainer: {
@@ -247,30 +294,21 @@ const styles = StyleSheet.create({
   },
   accountLabel: {
     fontSize: 12,
-    color: "#888",
   },
   cardNumber: {
     fontSize: 16,
-    color: "#333",
     fontWeight: "500",
     marginTop: 2,
   },
   deleteButton: {
-    backgroundColor: "#FEE2E2", // Rojo muy claro
+    backgroundColor: "#EF4444",
     padding: 10,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-  deleteIcon: {
-    // Si usas imagen personalizada
   },
   emptyText: {
     textAlign: "center",
-    color: "#aaa",
     marginTop: 50,
   },
-  // FOOTER
   footer: {
     position: "absolute",
     bottom: 30,
@@ -279,16 +317,12 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: "#347AF0",
-    borderRadius: 30, // Redondeado como en la imagen
+    borderRadius: 30,
     paddingVertical: 15,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 15,
-    shadowColor: "#347AF0",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
     elevation: 5,
   },
   addButtonText: {
@@ -308,6 +342,44 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     color: "#347AF0",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBox: {
+    width: "80%",
+    padding: 25,
+    borderRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 15,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    marginHorizontal: 5,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  modalBtnText: {
     fontSize: 16,
     fontWeight: "600",
   },

@@ -1,51 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useTarjetaStore } from "../store/TarjetaStore";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useTheme } from '../context/ThemeContext'; // <-- Contexto de tema
 
 export default function TransactionsScreen() {
   const navigation = useNavigation();
+  const { isDark } = useTheme();
 
   const { tarjetas, listarTarjetas, tarjetaActual, selectTarjeta } = useTarjetaStore();
-
   const [filterType, setFilterType] = useState("todos");
 
-  // 🔹 Cargar todas las tarjetas al entrar
   useEffect(() => {
-    listarTarjetas({}); // tu función ya sabe obtener por user_id
+    listarTarjetas({});
   }, []);
 
-  // 🔹 Total de todas las tarjetas combinadas
   const totalGlobal = tarjetas.reduce(
     (acc, t) => acc + (t.saldo || 0),
     0
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#F5F5F5' }]}>
       
-      {/* 🔙 Botón para retroceder */}
       <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={24} />
+        <Icon name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
       </TouchableOpacity>
 
-      {/* 🔽 Selector de tarjeta */}
       <TouchableOpacity
-        style={styles.selector}
+        style={[styles.selector, { backgroundColor: isDark ? '#2A2A3D' : '#e5e7eb' }]}
         onPress={() => navigation.navigate("SelectTarjetaScreen")}
       >
-        <Text style={styles.selectorText}>
+        <Text style={[styles.selectorText, { color: isDark ? '#FFF' : '#000' }]}>
           {tarjetaActual?.card_holder
             ? `Tarjeta: ${tarjetaActual.card_holder}`
             : "Seleccionar tarjeta"}
         </Text>
-        <Icon name="chevron-down" size={20} />
+        <Icon name="chevron-down" size={20} color={isDark ? '#FFF' : '#000'} />
       </TouchableOpacity>
 
-      {/* 🔹 Mini tarjeta arriba */}
       {tarjetaActual?.id && (
-        <View style={styles.miniCard}>
+        <View style={[styles.miniCard, { backgroundColor: isDark ? '#1e3a8a' : '#1e3a8a' }]}>
           <Text style={styles.cardTitle}>{tarjetaActual.brand}</Text>
           <Text style={styles.cardNumber}>**** **** **** {tarjetaActual.card_number?.slice(-4)}</Text>
           <Text style={styles.cardHolder}>{tarjetaActual.card_holder}</Text>
@@ -53,12 +49,12 @@ export default function TransactionsScreen() {
         </View>
       )}
 
-      {/* 🔹 Total global si NO hay tarjeta seleccionada */}
       {!tarjetaActual?.id && (
-        <Text style={styles.globalTotal}>Saldo total: S/ {totalGlobal}</Text>
+        <Text style={[styles.globalTotal, { color: isDark ? '#FFF' : '#000' }]}>
+          Saldo total: S/ {totalGlobal}
+        </Text>
       )}
 
-      {/* 🔥 Botones filtros */}
       <View style={styles.filterContainer}>
         <TouchableOpacity
           style={[styles.filterBtn, { backgroundColor: "#f87171" }]}
@@ -89,8 +85,7 @@ export default function TransactionsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Aquí iría la lista filtrada de movimientos */}
-      <Text style={{ marginTop: 20, textAlign: "center", fontSize: 16 }}>
+      <Text style={[styles.movementsText, { color: isDark ? '#FFF' : '#000' }]}>
         Aquí van los movimientos filtrados por: {filterType}
       </Text>
     </View>
@@ -105,11 +100,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 12,
     borderRadius: 10,
-    backgroundColor: "#e5e7eb",
+    marginBottom: 15,
   },
   selectorText: { fontSize: 16, fontWeight: "bold" },
   miniCard: {
-    backgroundColor: "#1e3a8a",
     padding: 15,
     marginTop: 15,
     borderRadius: 15,
@@ -134,4 +128,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
+  movementsText: { marginTop: 20, textAlign: "center", fontSize: 16 },
 });

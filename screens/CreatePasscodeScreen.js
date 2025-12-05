@@ -23,7 +23,7 @@ export default function CreatePasscodeScreen({ navigation }) {
   return (
     <View style={styles.container}>
 
-      {/* BOTÓN PARA REGRESAR */}
+      {/* 🔙 BOTÓN DE FLECHA PARA REGRESAR */}
       <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
         <Icon name="arrow-back" size={28} color="#000" />
       </TouchableOpacity>
@@ -84,36 +84,68 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: "#fff",
   },
+
   backBtn: {
     position: "absolute",
     top: 50,
     left: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10, textAlign: "center" },
-  subtitle: { color: "#777", marginBottom: 30, textAlign: "center" },
+
+  title: { 
+    fontSize: 22, 
+    fontWeight: "bold", 
+    marginBottom: 10, 
+    textAlign: "center" 
+  },
+
+  subtitle: { 
+    color: "#777", 
+    marginBottom: 30, 
+    textAlign: "center" 
+  },
+
   pinContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 30,
   },
+
   dot: {
     width: 15,
     height: 15,
     borderRadius: 10,
     marginHorizontal: 10,
   },
+
   keypad: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
   },
+
   key: {
     width: 80,
     height: 80,
     alignItems: "center",
     justifyContent: "center",
   },
-  keyText: { fontSize: 24, color: "#333" },
+
+  keyText: { 
+    fontSize: 24, 
+    color: "#333" 
+  },
+
   button: {
     backgroundColor: "#2E5BFF",
     paddingVertical: 12,
@@ -121,5 +153,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+
+  buttonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 16 
+  },
 });

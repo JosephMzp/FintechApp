@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useUsuariosStore } from '../store/UsuarioStore'; // <--- IMPORTANTE
+import { useUsuariosStore } from '../store/UsuarioStore';
+import { useTheme } from '../context/ThemeContext'; // <-- Contexto de tema
 
-// --- Datos de Prueba (Se muestran si no buscas nada) ---
 const RECENT_CONTACTS = [
   { id: '1', nombre: 'Mehedi Hasan', correo: 'hello@gmail.com', foto: 'https://i.pravatar.cc/150?img=11' },
   { id: '2', nombre: 'Juan Perez', correo: 'juan@gmail.com', foto: 'https://i.pravatar.cc/150?img=12' },
@@ -24,99 +24,80 @@ const RECENT_CONTACTS = [
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const [search, setSearch] = useState('');
+  const { isDark } = useTheme();
 
-  // Traemos funciones y estado del Store
   const { buscarUsuario, usuarios, loadingBusqueda, limpiarBusqueda } = useUsuariosStore();
 
-  // Cada vez que cambia el texto 'search', llamamos al store
   const handleSearch = (text) => {
     setSearch(text);
-    buscarUsuario(text); // Esto busca en Supabase
+    buscarUsuario(text);
   };
 
-  // Limpiar búsqueda al salir
   useEffect(() => {
     return () => limpiarBusqueda();
   }, []);
 
   const handleSelectUser = (usuario) => {
-    navigation.navigate('SelectPurpose', { 
-        usuarioDestino: usuario 
-    });
+    navigation.navigate('SelectPurpose', { usuarioDestino: usuario });
   };
 
-  // --- LÓGICA DE DATOS A MOSTRAR ---
-  // Si hay texto en el buscador, mostramos resultados de Supabase.
-  // Si no, mostramos los recientes (Mock).
   const dataToShow = search.length > 0 ? usuarios : RECENT_CONTACTS;
   const listTitle = search.length > 0 ? "Resultados de búsqueda" : "Más recientes";
 
   const renderItem = ({ item }) => {
-    // Manejo de imagen: si viene de BD puede ser null, usamos un placeholder
     const imageUri = item.foto 
         ? { uri: item.foto } 
-        : { uri: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }; // Avatar por defecto
+        : { uri: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
 
     return (
       <TouchableOpacity 
-          style={styles.contactItem}
+          style={[styles.contactItem, { borderBottomColor: isDark ? '#333' : '#F0F0F0' }]}
           onPress={() => handleSelectUser(item)} 
       >
-        {/* Avatar */}
         <Image source={imageUri} style={styles.avatar} />
-        
-        {/* Info Central */}
         <View style={styles.contactInfo}>
-          {/* Usamos item.nombre (nombre de la columna en BD) */}
-          <Text style={styles.contactName}>{item.nombre}</Text> 
-          
-          {/* Mostramos el teléfono si estamos buscando, o correo si es reciente */}
-          <Text style={styles.contactEmail}>
+          <Text style={[styles.contactName, { color: isDark ? '#FFF' : '#333' }]}>{item.nombre}</Text> 
+          <Text style={[styles.contactEmail, { color: isDark ? '#CCC' : '#888' }]}>
              {search.length > 0 ? `Cel: ${item.telefono}` : item.correo}
           </Text>
         </View>
-
-        {/* Icono de flecha para indicar acción */}
-        <Ionicons name="chevron-forward" size={20} color="#ccc" />
+        <Ionicons name="chevron-forward" size={20} color={isDark ? '#AAA' : '#ccc'} />
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#121212' : '#F8F9FD' }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color="#333" />
+          <Ionicons name="chevron-back" size={28} color={isDark ? '#FFF' : '#333'} />
         </TouchableOpacity>
         <View style={styles.headerTitles}>
-            <Text style={styles.title}>Elegir usuario</Text>
-            <Text style={styles.subtitle}>Busca por número de celular (+51...)</Text>
+            <Text style={[styles.title, { color: isDark ? '#FFF' : '#1A1A1A' }]}>Elegir usuario</Text>
+            <Text style={[styles.subtitle, { color: isDark ? '#CCC' : '#757575' }]}>
+              Busca por número de celular (+51...)
+            </Text>
         </View>
       </View>
 
-      {/* BODY (Tarjeta Blanca) */}
-      <View style={styles.whiteCard}>
-        
-        {/* Buscador */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#ccc" style={styles.searchIcon} />
+      <View style={[styles.whiteCard, { backgroundColor: isDark ? '#1E1E2F' : '#FFFFFF' }]}>
+        <View style={[styles.searchContainer, { backgroundColor: isDark ? '#2A2A3D' : '#F4F6F8' }]}>
+          <Ionicons name="search" size={20} color={isDark ? '#AAA' : '#ccc'} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: isDark ? '#FFF' : '#333' }]}
             placeholder="Ingresa número de celular..."
-            placeholderTextColor="#ccc"
+            placeholderTextColor={isDark ? '#555' : '#ccc'}
             value={search}
-            onChangeText={handleSearch} // <--- Conectado a la función de búsqueda
-            keyboardType="phone-pad"    // <--- Teclado numérico
+            onChangeText={handleSearch}
+            keyboardType="phone-pad"
           />
           {loadingBusqueda && <ActivityIndicator size="small" color="#347AF0" />}
         </View>
 
-        <Text style={styles.sectionTitle}>{listTitle}</Text>
+        <Text style={[styles.sectionTitle, { color: isDark ? '#FFF' : '#333' }]}>{listTitle}</Text>
 
-        {/* Lista de Contactos (Dinámica) */}
         <FlatList
           data={dataToShow}
           keyExtractor={(item) => item.id.toString()}
@@ -125,61 +106,35 @@ export default function SendMoneyScreen() {
           contentContainerStyle={{ paddingBottom: 100 }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { color: isDark ? '#AAA' : '#999' }]}>
                 {search.length > 0 ? "No se encontraron usuarios" : "No tienes contactos recientes"}
             </Text>
           }
         />
       </View>
 
-      {/* FOOTER */}
       <View style={styles.scanContainer}>
         <TouchableOpacity 
           style={styles.scanButton}
-          onPress={() => navigation.navigate('QRScanner')} // <--- AQUÍ EL CAMBIO
+          onPress={() => navigation.navigate('QRScanner')}
         >
           <MaterialCommunityIcons name="qrcode-scan" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.scanText}>Escanear QR</Text>
+        <Text style={[styles.scanText, { color: isDark ? '#FFF' : '#347AF0' }]}>Escanear QR</Text>
       </View>
-
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FD',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  backButton: {
-    marginBottom: 10,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-  },
-  headerTitles: {
-    paddingHorizontal: 10
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#757575',
-    marginBottom: 10,
-  },
+  container: { flex: 1 },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 },
+  backButton: { marginBottom: 10, width: 40, height: 40, justifyContent: 'center' },
+  headerTitles: { paddingHorizontal: 10 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 5 },
+  subtitle: { fontSize: 14, marginBottom: 10 },
   whiteCard: {
     flex: 1,
-    backgroundColor: 'white',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
@@ -193,85 +148,28 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F4F6F8',
     borderRadius: 12,
     paddingHorizontal: 15,
     height: 50,
     marginBottom: 20,
   },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 15,
-  },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 15,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-    backgroundColor: '#eee' // Color de fondo si la imagen carga lento
-  },
-  contactInfo: {
-    flex: 1,
-  },
-  contactName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  contactEmail: {
-    fontSize: 13,
-    color: '#888',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#F0F0F0',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    color: '#999',
-    fontStyle: 'italic'
-  },
-  // Botón flotante del escáner
-  scanContainer: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    alignItems: 'center',
-  },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, fontSize: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 15 },
+  contactItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomWidth: 1 },
+  avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 15, backgroundColor: '#eee' },
+  contactInfo: { flex: 1 },
+  contactName: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
+  contactEmail: { fontSize: 13 },
+  separator: { height: 1 },
+  emptyText: { textAlign: 'center', marginTop: 20, fontStyle: 'italic' },
+  scanContainer: { position: 'absolute', bottom: 30, alignSelf: 'center', alignItems: 'center' },
   scanButton: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    backgroundColor: '#347AF0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: "#347AF0",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    marginBottom: 5,
+    width: 65, height: 65, borderRadius: 32.5, backgroundColor: '#347AF0',
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: "#347AF0", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8, marginBottom: 5,
   },
-  scanText: {
-    color: '#347AF0',
-    fontWeight: '600',
-    fontSize: 12,
-  }
+  scanText: { fontWeight: '600', fontSize: 12 },
+  separator: { height: 1, backgroundColor: '#F0F0F0' },
 });

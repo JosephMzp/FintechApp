@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useRegisterStore } from "../store/RegistroStore";
+import { Ionicons } from "@expo/vector-icons"; // <-- IMPORTANTE
 
 export default function PersonalInfoScreen({ navigation }) {
   const {
@@ -20,8 +21,6 @@ export default function PersonalInfoScreen({ navigation }) {
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
-  
-  // Inicializamos en null
   const [fechaNacimiento, setFechaNacimiento] = useState(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -35,7 +34,6 @@ export default function PersonalInfoScreen({ navigation }) {
   };
 
   const handleContinue = () => {
-    // MODIFICADO: Solo validamos nombre y apellido para pruebas
     if (!nombre.trim() || !apellido.trim()) {
       Alert.alert("Faltan datos", "Por favor completa tu nombre y apellido.");
       return;
@@ -43,8 +41,6 @@ export default function PersonalInfoScreen({ navigation }) {
 
     saveNombre(nombre);
     saveApellido(apellido);
-    
-    // MODIFICADO: Forzamos NULL para evitar errores con el calendario en Web
     saveNacimiento(null); 
 
     navigation.navigate("AddressScreen");
@@ -52,6 +48,12 @@ export default function PersonalInfoScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+
+      {/* 🔙 FLECHA PARA RETROCEDER */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="chevron-back" size={28} color="#333" />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Información Personal</Text>
 
       <TextInput
@@ -68,14 +70,12 @@ export default function PersonalInfoScreen({ navigation }) {
         onChangeText={setApellido}
       />
 
-      {/* El botón del calendario sigue ahí visualmente, pero no es obligatorio usarlo */}
       <TouchableOpacity style={styles.dateInput} onPress={showDatePicker}>
         <Text style={[styles.dateText, !fechaNacimiento && { color: "#aaa" }]}>
           {fechaNacimiento ? fechaNacimiento : "Seleccione fecha (Opcional en pruebas)"}
         </Text>
       </TouchableOpacity>
 
-      {/* En Web esto no se abrirá correctamente, pero ya no bloquea el flujo */}
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
@@ -86,9 +86,8 @@ export default function PersonalInfoScreen({ navigation }) {
 
       <TouchableOpacity
         style={[
-          styles.button, 
-          // MODIFICADO: La opacidad solo depende de nombre y apellido
-          { opacity: (nombre && apellido) ? 1 : 0.5 }
+          styles.button,
+          { opacity: nombre && apellido ? 1 : 0.5 },
         ]}
         onPress={handleContinue}
       >
@@ -102,9 +101,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: "center",
+    paddingTop: 45,
     backgroundColor: "#fff",
   },
+
+  /* 🔙 Estilo del botón de regreso */
+  backButton: {
+    position: "absolute",
+    top: 20,
+    left: 15,
+    padding: 5,
+    zIndex: 10,
+  },
+
   title: {
     fontSize: 24,
     fontWeight: "600",
@@ -112,6 +121,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
   },
+
   input: {
     width: "100%",
     padding: 14,
@@ -130,7 +140,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 25,
     backgroundColor: "#f9f9f9",
-    justifyContent: "center",
   },
   dateText: {
     fontSize: 16,
