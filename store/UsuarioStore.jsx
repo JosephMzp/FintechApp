@@ -47,6 +47,7 @@ export const useUsuariosStore = create((set, get) => ({
         codigo_postal: form.codigo_postal || null,
         tarjeta: form.tarjeta || null,
         foto: form.foto || null,
+        pais: form.pais || null,
       });
 
       return nuevoUsuario;

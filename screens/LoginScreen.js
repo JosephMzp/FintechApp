@@ -9,7 +9,8 @@ import {
   Platform,
   Modal,
   FlatList,
-  ActivityIndicator
+  ActivityIndicator,
+  SafeAreaView // Importamos SafeAreaView para manejar mejor los márgenes
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -64,131 +65,142 @@ export default function LoginScreen() {
   const borderColor = isDark ? '#333' : '#E6EEF9';
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: bgColor }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back" size={26} color={isDark ? '#FFFFFF' : '#333'} />
-      </TouchableOpacity>
-
-      <Text style={[styles.brand, { color: '#347AF0' }]}>Coinpay</Text>
-      <Text style={[styles.title, { color: textColor }]}>Inicia sesión en tu cuenta</Text>
-      <Text style={[styles.subtitle, { color: subTextColor }]}>
-        Ingresa tu número y contraseña para continuar
-      </Text>
-
-      {/* Número */}
-      <View style={styles.phoneRow}>
-        <TouchableOpacity
-          style={[styles.prefixContainer, { backgroundColor: inputBg, borderColor }]}
-          onPress={() => setCountryModalVisible(true)}
-        >
-          <Text style={[styles.flagText, { color: inputText }]}>{country.flag}</Text>
-          <Text style={[styles.dialCodeText, { color: inputText }]}>{country.dialCode}</Text>
-          <Ionicons name="chevron-down" size={16} color={inputText} style={{ marginLeft: 6 }} />
+    // Usamos SafeAreaView para asegurar que el contenido no se solape con la barra de estado
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {/* Botón de retroceso ajustado */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("SingUp")}>
+          <Ionicons name="chevron-back" size={26} color={isDark ? '#FFFFFF' : '#333'} />
         </TouchableOpacity>
 
-        <TextInput
-          style={[styles.phoneInput, { backgroundColor: inputBg, color: inputText, borderColor }]}
-          placeholder="Número de celular"
-          placeholderTextColor={subTextColor}
-          keyboardType={Platform.OS === 'ios' ? 'phone-pad' : 'numeric'}
-          value={phone}
-          onChangeText={handlePhoneChange}
-          textContentType="telephoneNumber"
-          maxLength={country.maxDigits}
-        />
-      </View>
+        <View style={styles.content}>
+            <Text style={[styles.brand, { color: '#347AF0' }]}>Coinpay</Text>
+            <Text style={[styles.title, { color: textColor }]}>Inicia sesión en tu cuenta</Text>
+            <Text style={[styles.subtitle, { color: subTextColor }]}>
+                Ingresa tu número y contraseña para continuar
+            </Text>
 
-      {/* Contraseña */}
-      <View style={[styles.passwordRow, { backgroundColor: inputBg, borderColor }]}>
-        <TextInput
-          style={[styles.passwordInput, { color: inputText }]}
-          placeholder="Contraseña"
-          placeholderTextColor={subTextColor}
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={(t) => { setPassword(t); setLoginError(false); }}
-          textContentType="password"
-        />
-        <TouchableOpacity onPress={() => setShowPassword((s) => !s)} style={styles.eyeBtn}>
-          <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color={inputText} />
-        </TouchableOpacity>
-      </View>
-
-      {loginError && (
-        <Text style={styles.errorText}>Contraseña incorrecta</Text>
-      )}
-
-      <TouchableOpacity onPress={() => {}}>
-        <Text style={[styles.forgot, { color: '#347AF0' }]}>Olvidaste tu contraseña</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[
-          styles.loginButton,
-          { backgroundColor: phone.length >= 1 && password.length >= 1 ? '#347AF0' : '#9BB8EC' },
-        ]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text style={styles.loginText}>Iniciar Sesión</Text>
-        )}
-      </TouchableOpacity>
-
-      {/* Modal Países */}
-      <Modal
-        visible={countryModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setCountryModalVisible(false)}
-      >
-        <TouchableOpacity style={styles.modalOverlay} onPress={() => setCountryModalVisible(false)} activeOpacity={1}>
-          <View style={[styles.modalInner, { backgroundColor: bgColor }]}>
-            <Text style={[styles.modalTitle, { color: textColor }]}>Select country</Text>
-            <FlatList
-              data={COUNTRIES}
-              keyExtractor={(item) => item.code}
-              renderItem={({ item }) => (
+            {/* Número */}
+            <View style={styles.phoneRow}>
                 <TouchableOpacity
-                  style={styles.countryRow}
-                  onPress={() => {
-                    setCountry(item);
-                    setPhone((p) => p.slice(0, item.maxDigits));
-                    setCountryModalVisible(false);
-                  }}
+                style={[styles.prefixContainer, { backgroundColor: inputBg, borderColor }]}
+                onPress={() => setCountryModalVisible(true)}
                 >
-                  <Text style={[styles.countryFlag, { color: inputText }]}>{item.flag}</Text>
-                  <View style={{ marginLeft: 10 }}>
-                    <Text style={[styles.countryName, { color: inputText }]}>{item.name}</Text>
-                    <Text style={[styles.countryDial, { color: subTextColor }]}>{item.dialCode}</Text>
-                  </View>
+                <Text style={[styles.flagText, { color: inputText }]}>{country.flag}</Text>
+                <Text style={[styles.dialCodeText, { color: inputText }]}>{country.dialCode}</Text>
+                <Ionicons name="chevron-down" size={16} color={inputText} style={{ marginLeft: 6 }} />
                 </TouchableOpacity>
-              )}
-              ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            />
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </KeyboardAvoidingView>
+
+                <TextInput
+                style={[styles.phoneInput, { backgroundColor: inputBg, color: inputText, borderColor }]}
+                placeholder="Número de celular"
+                placeholderTextColor={subTextColor}
+                keyboardType={Platform.OS === 'ios' ? 'phone-pad' : 'numeric'}
+                value={phone}
+                onChangeText={handlePhoneChange}
+                textContentType="telephoneNumber"
+                maxLength={country.maxDigits}
+                />
+            </View>
+
+            {/* Contraseña */}
+            <View style={[styles.passwordRow, { backgroundColor: inputBg, borderColor }]}>
+                <TextInput
+                style={[styles.passwordInput, { color: inputText }]}
+                placeholder="Contraseña"
+                placeholderTextColor={subTextColor}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={(t) => { setPassword(t); setLoginError(false); }}
+                textContentType="password"
+                />
+                <TouchableOpacity onPress={() => setShowPassword((s) => !s)} style={styles.eyeBtn}>
+                <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color={inputText} />
+                </TouchableOpacity>
+            </View>
+
+            {loginError && (
+                <Text style={styles.errorText}>Contraseña incorrecta</Text>
+            )}
+
+            <TouchableOpacity onPress={() => {}}>
+                <Text style={[styles.forgot, { color: '#347AF0' }]}>Olvidaste tu contraseña</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                style={[
+                styles.loginButton,
+                { backgroundColor: phone.length >= 1 && password.length >= 1 ? '#347AF0' : '#9BB8EC' },
+                ]}
+                onPress={handleLogin}
+                disabled={loading}
+            >
+                {loading ? (
+                <ActivityIndicator color="white" />
+                ) : (
+                <Text style={styles.loginText}>Iniciar Sesión</Text>
+                )}
+            </TouchableOpacity>
+        </View>
+
+        {/* Modal Países */}
+        <Modal
+          visible={countryModalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setCountryModalVisible(false)}
+        >
+          <TouchableOpacity style={styles.modalOverlay} onPress={() => setCountryModalVisible(false)} activeOpacity={1}>
+            <View style={[styles.modalInner, { backgroundColor: bgColor }]}>
+              <Text style={[styles.modalTitle, { color: textColor }]}>Select country</Text>
+              <FlatList
+                data={COUNTRIES}
+                keyExtractor={(item) => item.code}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.countryRow}
+                    onPress={() => {
+                      setCountry(item);
+                      setPhone((p) => p.slice(0, item.maxDigits));
+                      setCountryModalVisible(false);
+                    }}
+                  >
+                    <Text style={[styles.countryFlag, { color: inputText }]}>{item.flag}</Text>
+                    <View style={{ marginLeft: 10 }}>
+                      <Text style={[styles.countryName, { color: inputText }]}>{item.name}</Text>
+                      <Text style={[styles.countryDial, { color: subTextColor }]}>{item.dialCode}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 22,
-    justifyContent: 'center',
   },
+  // Botón de retroceso ajustado: ya no es absolute top:60, sino relativo con margen
   backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 30,
-    left: 18,
-    zIndex: 5,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    alignSelf: 'flex-start', // Para que no ocupe todo el ancho
+    marginTop: 10, // Margen superior adicional
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 22,
+    justifyContent: 'center', // Centra el contenido verticalmente
+    marginTop: -50, // Pequeño ajuste para subir visualmente el formulario
   },
   brand: { fontSize: 18, fontWeight: '700', textAlign: 'center', marginBottom: 6 },
   title: { fontSize: 22, fontWeight: '700', textAlign: 'center', marginBottom: 6 },
