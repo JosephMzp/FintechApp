@@ -1,0 +1,36 @@
+name: Build and Deploy in EAS - Pipeline_Actions
+on:
+  push:
+    branches:
+      - Pipeline_Actions
+
+jobs:
+  build_android:
+    runs-on: ubuntu-latest
+    env:
+      EAS_TOKEN: 98CzjX-LBtmNUMpNc1gDAJEvFF2adUUzgOVlK_sH
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: npm
+          
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ env.EAS_TOKEN }}
+          expo-version: latest
+          eas-version: latest
+
+      - name: Publish Update (OTA)
+        run: eas update --auto --non-interactive
+
+      - name: Build Android App
+        run: eas build -p android --profile development --non-interactive --no-wait
