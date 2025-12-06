@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+// 1. Importamos los temas por defecto para usarlos de base
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"; 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // CONTEXTO GLOBAL DEL TEMA (MODO OSCURO)
@@ -35,6 +36,7 @@ import HomeScreen from "./screens/HomeScreen";
 import AddCardIntroScreen from "./screens/AddCardIntroScreen";
 import AddCardFormScreen from "./screens/AddCardFormScreen";
 import CardListScreen from "./screens/CardListScreen";
+import SpendingScreen from "./screens/SpendingScreen";
 
 // Transacciones
 import SendMoneyScreen from "./screens/SendMoneyScreen";
@@ -55,19 +57,25 @@ const Stack = createNativeStackNavigator();
 function AppNavigation() {
   const { isDark } = useTheme();
 
+  // 2. Seleccionamos el tema base correcto según el modo
+  const BaseTheme = isDark ? DarkTheme : DefaultTheme;
+
+  // 3. Creamos el tema personalizado extendiendo (...BaseTheme)
+  // Esto asegura que 'fonts' exista, evitando el error "undefined"
+  const customTheme = {
+    ...BaseTheme,
+    colors: {
+      ...BaseTheme.colors, // Mantenemos los colores base que no vamos a cambiar
+      background: isDark ? "#0d0d0d" : "#ffffff",
+      card: isDark ? "#1a1a1a" : "#ffffff",
+      text: isDark ? "#ffffff" : "#000000",
+      border: isDark ? "#333333" : "#e5e5e5",
+      primary: "#347AF0",
+    },
+  };
+
   return (
-    <NavigationContainer
-      theme={{
-        dark: isDark,
-        colors: {
-          background: isDark ? "#0d0d0d" : "#ffffff",
-          card: isDark ? "#1a1a1a" : "#ffffff",
-          text: isDark ? "#ffffff" : "#000000",
-          border: isDark ? "#333333" : "#e5e5e5",
-          primary: "#347AF0",
-        },
-      }}
-    >
+    <NavigationContainer theme={customTheme}>
       <StatusBar style={isDark ? "light" : "dark"} />
 
       <Stack.Navigator
@@ -129,6 +137,7 @@ function AppNavigation() {
           component={TransactionSuccessScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="Spending" component={SpendingScreen} />
 
         {/* QR */}
         <Stack.Screen name="MyQR" component={MyQRScreen} />

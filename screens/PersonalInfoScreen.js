@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useRegisterStore } from "../store/RegistroStore";
-import { Ionicons } from "@expo/vector-icons"; // <-- IMPORTANTE
+import { Ionicons } from "@expo/vector-icons"; 
+import { useTheme } from "../context/ThemeContext"; // 🌙 Integración Modo Oscuro
 
 export default function PersonalInfoScreen({ navigation }) {
+  const { isDark } = useTheme(); // 🌙
+
   const {
     setNombre: saveNombre,
     setApellido: saveApellido,
@@ -28,70 +30,99 @@ export default function PersonalInfoScreen({ navigation }) {
   const hideDatePicker = () => setDatePickerVisibility(false);
 
   const handleConfirm = (date) => {
+    // Formato simple YYYY-MM-DD
     const fechaFormateada = date.toISOString().split("T")[0];
     setFechaNacimiento(fechaFormateada);
     hideDatePicker();
   };
 
   const handleContinue = () => {
-    if (!nombre.trim() || !apellido.trim()) {
-      Alert.alert("Faltan datos", "Por favor completa tu nombre y apellido.");
+    // 1. Validar que todos los campos, incluida la fecha, estén llenos
+    if (!nombre.trim() || !apellido.trim() || !fechaNacimiento) {
+      Alert.alert("Faltan datos", "Por favor completa nombre, apellido y fecha de nacimiento.");
       return;
     }
 
+    // 2. Guardar los datos reales en el store
     saveNombre(nombre);
     saveApellido(apellido);
-    saveNacimiento(null); 
+    saveNacimiento(fechaNacimiento); // ✅ Ahora sí guardamos la fecha
 
     navigation.navigate("AddressScreen");
   };
 
+  // Estilos dinámicos para modo oscuro
+  const dynamicStyles = {
+    container: { backgroundColor: isDark ? "#121212" : "#fff" },
+    text: { color: isDark ? "#fff" : "#333" },
+    input: {
+      backgroundColor: isDark ? "#1E1E1E" : "#fff",
+      color: isDark ? "#fff" : "#333",
+      borderColor: isDark ? "#444" : "#ccc",
+    },
+    dateInput: {
+      backgroundColor: isDark ? "#1E1E1E" : "#f9f9f9",
+      borderColor: isDark ? "#444" : "#ccc",
+    },
+    placeholder: isDark ? "#888" : "#999"
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
 
       {/* 🔙 FLECHA PARA RETROCEDER */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back" size={28} color="#333" />
+        <Ionicons name="chevron-back" size={28} color={isDark ? "#fff" : "#333"} />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Información Personal</Text>
+      <Text style={[styles.title, dynamicStyles.text]}>Información Personal</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, dynamicStyles.input]}
         placeholder="Nombre"
+        placeholderTextColor={dynamicStyles.placeholder}
         value={nombre}
         onChangeText={setNombre}
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, dynamicStyles.input]}
         placeholder="Apellido"
+        placeholderTextColor={dynamicStyles.placeholder}
         value={apellido}
         onChangeText={setApellido}
       />
 
-      <TouchableOpacity style={styles.dateInput} onPress={showDatePicker}>
-        <Text style={[styles.dateText, !fechaNacimiento && { color: "#aaa" }]}>
-          {fechaNacimiento ? fechaNacimiento : "Seleccione fecha (Opcional en pruebas)"}
+      {/* Selector de Fecha */}
+      <TouchableOpacity 
+        style={[styles.dateInput, dynamicStyles.dateInput]} 
+        onPress={showDatePicker}
+      >
+        <Text style={[
+            styles.dateText, 
+            { color: fechaNacimiento ? (isDark ? "#fff" : "#333") : "#aaa" }
+        ]}>
+          {fechaNacimiento ? fechaNacimiento : "Seleccione fecha de nacimiento"}
         </Text>
       </TouchableOpacity>
 
+      {/* Modal del Calendario (Nativo) */}
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
-        maximumDate={new Date()}
+        maximumDate={new Date()} // No permitir fechas futuras
       />
 
       <TouchableOpacity
         style={[
           styles.button,
-          { opacity: nombre && apellido ? 1 : 0.5 },
+          { opacity: (nombre && apellido && fechaNacimiento) ? 1 : 0.5 },
         ]}
         onPress={handleContinue}
       >
-        <Text style={styles.buttonText}>Continuar (Sin Fecha)</Text>
+        <Text style={styles.buttonText}>Continuar</Text>
       </TouchableOpacity>
     </View>
   );
@@ -102,10 +133,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 45,
-    backgroundColor: "#fff",
   },
-
-  /* 🔙 Estilo del botón de regreso */
   backButton: {
     position: "absolute",
     top: 20,
@@ -113,37 +141,30 @@ const styles = StyleSheet.create({
     padding: 5,
     zIndex: 10,
   },
-
   title: {
     fontSize: 24,
     fontWeight: "600",
     marginBottom: 30,
     textAlign: "center",
-    color: "#333",
   },
-
   input: {
     width: "100%",
     padding: 14,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     marginBottom: 15,
     fontSize: 16,
-    color: "#333",
   },
   dateInput: {
     width: "100%",
     padding: 14,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     marginBottom: 25,
-    backgroundColor: "#f9f9f9",
+    justifyContent: 'center',
   },
   dateText: {
     fontSize: 16,
-    color: "#333",
   },
   button: {
     backgroundColor: "#347AF0",

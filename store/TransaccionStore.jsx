@@ -1,5 +1,7 @@
 import { create } from "zustand";
-import { InsertarTransaccion, MostrarTransaccion, ActualizarTransaccion, EliminarTransaccion, ObtenerTransaccion, BuscarTransaccion } from "../supabase/crudTransferencias";
+import { supabase } from "../supabase/supabase.config";
+import { InsertarTransaccion, MostrarTransaccion, ActualizarTransaccion, EliminarTransaccion, ObtenerTransaccion, BuscarTransaccion,ObtenerMovimientosCuenta } from "../supabase/crudTransferencias";
+import { ObtenerMiCuenta } from "../supabase/crudUsuarios";
 
 export const useTransaccionStore = create((set, get) => ({
   buscador: "",
@@ -118,5 +120,70 @@ export const useTransaccionStore = create((set, get) => ({
     const response = await BuscarTransaccion(p);
     set({ transacciones: response });
     return response;
+  },
+  saldo: 0,
+  ingresos: 0,
+  gastos: 0,
+  cargarDatosReal: async () => {
+    set({ loading: true });
+    try {
+      // 1. Obtener usuario auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 2. Obtener ID de usuario en tabla pública
+      const { data: usuarioData } = await supabase
+        .from("usuarios")
+        .select("id")
+        .eq("idauth", user.id)
+        .single();
+
+      if (!usuarioData) return;
+
+      // 3. Obtener la CUENTA (Saldo real)
+      const cuenta = await ObtenerMiCuenta(usuarioData.id);
+      if (!cuenta) {
+        set({ saldo: 0, transacciones: [], loading: false });
+        return;
+      }
+
+      // 4. Obtener Transacciones
+      const rawData = await ObtenerMovimientosCuenta(cuenta.id);
+
+      // 5. Procesar datos
+      let totalIngresos = 0;
+      let totalGastos = 0;
+
+      const procesadas = rawData.map((tx) => {
+        const soyOrigen = tx.cuenta_origen === cuenta.id;
+        
+        if (soyOrigen) {
+          totalGastos += parseFloat(tx.monto);
+        } else {
+          totalIngresos += parseFloat(tx.monto);
+        }
+
+        return {
+          ...tx,
+          tipo_visual: soyOrigen ? 'gasto' : 'ingreso',
+          titulo: soyOrigen ? `Envío a ...` : `Recibido de ...`, // Podrías mejorar esto con un join
+          signo: soyOrigen ? '-' : '+',
+          color: soyOrigen ? '#E53935' : '#4CAF50',
+          iconName: soyOrigen ? 'arrow-up-right' : 'arrow-down-left'
+        };
+      });
+
+      set({
+        saldo: cuenta.saldo,
+        transacciones: procesadas,
+        ingresos: totalIngresos,
+        gastos: totalGastos,
+        loading: false
+      });
+
+    } catch (error) {
+      console.error("Error en store:", error);
+      set({ loading: false });
+    }
   },
 }));

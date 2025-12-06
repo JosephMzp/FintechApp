@@ -25,6 +25,7 @@ export default function Actions({ onBankPress }) {
       <ActionButton 
         icon={<FontAwesome name="money" size={22} color="#F5A623" />}
         label="Pedido" 
+        onPress={() => navigation.navigate("MyQR")}
         bgColor="#FFF8E8" 
       />
       <ActionButton 

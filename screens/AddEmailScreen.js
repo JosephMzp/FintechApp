@@ -106,7 +106,7 @@ export default function AddEmailScreen({ navigation }) {
         style={[
           styles.button,
           {
-            backgroundColor: isDark ? "#347AF0" : "#347AF0", // igual, pero ⭐ podrías cambiarlo si quieres
+            backgroundColor: isDark ? "#347AF0" : "#347AF0", 
             opacity: emailLocal && !error ? 1 : 0.4,
           },
         ]}

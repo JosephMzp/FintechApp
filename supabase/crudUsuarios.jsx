@@ -88,3 +88,17 @@ export const ObtenerCuentaPorUsuario = async (userId) => {
     return null;
   }
 };
+
+export const ObtenerMiCuenta = async (userId) => {
+  const { data, error } = await supabase
+    .from("cuentas")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle(); // Asumimos una cuenta por usuario por ahora
+
+  if (error) {
+    console.error("Error obteniendo cuenta:", error);
+    return null;
+  }
+  return data;
+};

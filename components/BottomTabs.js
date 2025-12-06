@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+
+const { width } = Dimensions.get('window');
 
 export default function BottomTabs() {
   const navigation = useNavigation();
@@ -11,82 +13,115 @@ export default function BottomTabs() {
     const route = useRoute();
     routeName = route.name;
   } catch (e) {
-    routeName = "Home"; // Fallback
+    routeName = "Home"; 
   }
 
-  // Función auxiliar para determinar el color
   const getColor = (tabName) => {
     return routeName === tabName ? "#347AF0" : "#AAA";
   };
 
   return (
-    <View style={styles.bottomTabs}>
+    <View style={styles.container} pointerEvents="box-none">
       
-      {/* HOME TAB */}
-      <TouchableOpacity 
-        style={styles.tabItem} 
-        onPress={() => navigation.navigate('Home')}
-      >
-        <Feather name="home" size={28} color={getColor("Home")} />
-      </TouchableOpacity>
+      {/* 1. La Barra Blanca de Fondo (Botones normales) */}
+      <View style={styles.barBackground}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
+          <Feather name="home" size={26} color={getColor("Home")} />
+        </TouchableOpacity>
 
-      {/* ACTIVITY / CLOCK TAB  */}
-      <TouchableOpacity style={styles.tabItem}>
-        <Feather name="clock" size={28} color="#AAA" /> 
-      </TouchableOpacity>
-      
-      {/* CENTER BUTTON (Siempre blanco sobre azul) */}
-      <TouchableOpacity style={styles.centralTabButton}>
-        <Feather name="grid" size={28} color="white" />
-      </TouchableOpacity>
-      
-      {/* SUPPORT TAB */}
-      <TouchableOpacity 
-        style={styles.tabItem} 
-        onPress={() => navigation.navigate("SupportChat")}
-      >
-        <Feather name="message-square" size={28} color={getColor("SupportChat")} />
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Spending')}>
+          <Feather name="clock" size={26} color={getColor("Spending")} /> 
+        </TouchableOpacity>
 
-      {/* PROFILE TAB */}
-      <TouchableOpacity 
-        style={styles.tabItem} 
-        onPress={() => navigation.navigate("ProfileSreen")}
-      >
-        <Feather name="user" size={28} color={getColor("ProfileSreen")} />
-      </TouchableOpacity>
+        {/* ESPACIO VACÍO PARA EL BOTÓN FLOTANTE */}
+        <View style={{ width: 70 }} />
+
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate("SupportChat")}>
+          <Feather name="message-square" size={26} color={getColor("SupportChat")} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate("ProfileSreen")}>
+          <Feather name="user" size={26} color={getColor("ProfileSreen")} />
+        </TouchableOpacity>
+      </View>
+
+      {/* 2. El Botón Flotante (Copiado de SendMoneyScreen) */}
+      {/* Se posiciona absolutamente sobre la barra */}
+      <View style={styles.fabContainer} pointerEvents="box-none">
+        <TouchableOpacity 
+          style={styles.scanButton}
+          onPress={() => navigation.navigate('QRScanner')}
+          activeOpacity={0.8}
+        >
+          {/* Usamos el mismo icono que en tu pantalla funcional */}
+          <MaterialCommunityIcons name="qrcode-scan" size={28} color="white" />
+        </TouchableOpacity>
+      </View>
 
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bottomTabs: {
-    flexDirection: 'row',
-    height: 90,
-    borderTopWidth: 1,
-    borderTopColor: '#EEE',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    paddingBottom: 20,
+  // Contenedor principal invisible que ocupa el espacio
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    width: width,
+    height: 90, // Altura suficiente para la barra + botón
+    justifyContent: 'flex-end',
+    elevation: 0,
+    zIndex: 9999, // Asegura que esté por encima de todo
   },
+  
+  // Estilo de la barra blanca
+  barBackground: {
+    height: 70, // Altura de la barra
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    // Sombras suaves
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    height: '100%',
   },
-  centralTabButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 15,
-    backgroundColor: '#347AF0',
-    justifyContent: 'center',
+
+  // Contenedor absoluto para centrar el botón flotante
+  fabContainer: {
+    position: 'absolute',
+    bottom: 25, // Ajusta esto para subir/bajar el botón
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    marginTop: -30,
-    shadowColor: '#347AF0',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    justifyContent: 'center',
+    zIndex: 10000, // Z-index máximo para asegurar el toque
+  },
+
+  // ESTILOS COPIADOS DE TU PANTALLA FUNCTIONAL (SendMoneyScreen)
+  scanButton: {
+    width: 65, 
+    height: 65, 
+    borderRadius: 32.5, 
+    backgroundColor: '#347AF0',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    // Sombras idénticas a tu diseño
+    shadowColor: "#347AF0", 
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, 
+    shadowRadius: 8, 
+    elevation: 8,
   },
 });

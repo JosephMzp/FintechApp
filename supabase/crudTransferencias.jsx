@@ -81,3 +81,19 @@ export async function BuscarTransaccion(p) {
   if (error) throw error;
   return data;
 }
+
+export const ObtenerMovimientosCuenta = async (cuentaId) => {
+  // Buscamos donde la cuenta sea origen O destino
+  const { data, error } = await supabase
+    .from("transacciones")
+    .select("*")
+    .or(`cuenta_origen.eq.${cuentaId},cuenta_destino.eq.${cuentaId}`)
+    .order("fecha", { ascending: false }) // Más recientes primero
+    .order("hora", { ascending: false });
+
+  if (error) {
+    console.error("Error trayendo movimientos:", error);
+    return [];
+  }
+  return data;
+};
