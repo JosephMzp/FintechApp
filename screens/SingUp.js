@@ -1,124 +1,42 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Image,
-} from "react-native";
-import { useTheme } from "../context/ThemeContext";
+import { render, fireEvent } from "@testing-library/react-native";
+import SingUp from "../SingUp";
 
-export default function SingUp({ navigation }) {
-  const { isDark } = useTheme();
+// Mock del contexto de Theme
+jest.mock("../../context/ThemeContext", () => ({
+  useTheme: () => ({ isDark: false }),
+}));
 
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: isDark ? "#000000" : "#FFFFFF" }]}
-    >
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+describe("SingUp Screen", () => {
+  const mockNavigation = {
+    navigate: jest.fn(),
+    goBack: jest.fn(),
+  };
 
-      <View style={styles.mainContent}>
-        <Image
-          source={require("../assets/Registro.png")}
-          style={styles.illustration}
-          resizeMode="contain"
-        />
+  test("Navega a PhoneInput cuando se presiona 'Registrarse'", () => {
+    const { getByText } = render(<SingUp navigation={mockNavigation} />);
 
-        <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#1E1E1E" }]}>
-          Crea tu cuenta
-        </Text>
+    const btn = getByText("Registrarse");
+    fireEvent.press(btn);
 
-        <Text style={[styles.subtitle, { color: isDark ? "#CCCCCC" : "#666" }]}>
-          Potente herramienta que te permite enviar, recibir y rastrear fácilmente todas tus transacciones.
-        </Text>
-      </View>
+    expect(mockNavigation.navigate).toHaveBeenCalledWith("PhoneInput");
+  });
 
-      <View style={styles.footerContainer}>
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            { backgroundColor: isDark ? "#347AF0" : "#347AF0" },
-          ]}
-          onPress={() => navigation.navigate("PhoneInput")}
-        >
-          <Text style={styles.primaryButtonText}>Registrarse</Text>
-        </TouchableOpacity>
+  test("Navega a Login cuando se presiona 'Iniciar Sesión'", () => {
+    const { getByText } = render(<SingUp navigation={mockNavigation} />);
 
-        <TouchableOpacity
-          style={[
-            styles.secondaryButton,
-            { backgroundColor: isDark ? "#1E1E1E" : "#FFFFFF" },
-          ]}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <Text
-            style={[
-              styles.secondaryButtonText,
-              { color: isDark ? "#347AF0" : "#347AF0" },
-            ]}
-          >
-            Iniciar Sesión
-          </Text>
-        </TouchableOpacity>
+    const btn = getByText("Iniciar Sesión");
+    fireEvent.press(btn);
 
-        <TouchableOpacity
-          style={[
-            styles.backButton,
-            { backgroundColor: isDark ? "#333333" : "#E5E5E5" },
-          ]}
-          onPress={() => navigation.goBack()}
-        >
-          <Text
-            style={[styles.backButtonText, { color: isDark ? "#FFFFFF" : "#333" }]}
-          >
-            Volver atrás
-          </Text>
-        </TouchableOpacity>
+    expect(mockNavigation.navigate).toHaveBeenCalledWith("Login");
+  });
 
-        <Text style={[styles.footerText, { color: isDark ? "#AAAAAA" : "#888" }]}>
-          Al continuar aceptas nuestros
-          <Text style={styles.linkText}> Términos de servicio </Text>
-          y
-          <Text style={styles.linkText}> Política de privacidad</Text>.
-        </Text>
-      </View>
-    </SafeAreaView>
-  );
-}
+  test("Ejecuta goBack al presionar 'Volver atrás'", () => {
+    const { getByText } = render(<SingUp navigation={mockNavigation} />);
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  mainContent: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 30,
-    marginTop: -50,
-  },
-  illustration: { width: "100%", height: 250, marginBottom: 40 },
-  title: { fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 15 },
-  subtitle: { fontSize: 16, textAlign: "center", lineHeight: 24 },
-  footerContainer: { paddingHorizontal: 30, paddingBottom: 40 },
-  primaryButton: {
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: "center",
-    marginBottom: 15,
-  },
-  primaryButtonText: { color: "white", fontSize: 18, fontWeight: "600" },
-  secondaryButton: {
-    paddingVertical: 14,
-    borderRadius: 30,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#347AF0",
-    marginBottom: 15,
-  },
-  secondaryButtonText: { fontSize: 18, fontWeight: "600" },
-  backButton: { paddingVertical: 12, borderRadius: 30, alignItems: "center", marginBottom: 20 },
-  backButtonText: { fontSize: 16, fontWeight: "600" },
-  footerText: { fontSize: 13, textAlign: "center", lineHeight: 20 },
-  linkText: { color: "#347AF0", textDecorationLine: "underline" },
+    const btn = getByText("Volver atrás");
+    fireEvent.press(btn);
+
+    expect(mockNavigation.goBack).toHaveBeenCalled();
+  });
 });
