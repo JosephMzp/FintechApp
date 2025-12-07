@@ -12,14 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-  [
-    "react-native-purchases",
-    {
-      "googlePlayApiKey": "test_ODEjtGXbsFUoKkzepJrMtVbimWj"
-    }
-  ]
-],
+    
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.FintechMobileApp"
