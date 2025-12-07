@@ -12,15 +12,25 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+  [
+    "react-native-purchases",
+    {
+      "googlePlayApiKey": "test_ODEjtGXbsFUoKkzepJrMtVbimWj"
+    }
+  ]
+],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.FintechMobileApp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.FintechMobileApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

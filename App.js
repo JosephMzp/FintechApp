@@ -48,6 +48,7 @@ import MyQRScreen from "./screens/MyQRScreen";
 import QRScannerScreen from "./screens/QRScannerScreen";
 import PrivacidadSeguridad from "./screens/PrivacidadSeguridad";
 import TransacScreen from "./screens/TransacScreen";
+import { SubscriptionProvider } from './store/SubscriptionStore';
 
 const Stack = createNativeStackNavigator();
 
@@ -75,6 +76,7 @@ function AppNavigation() {
   };
 
   return (
+    <SubscriptionProvider>
     <NavigationContainer theme={customTheme}>
       <StatusBar style={isDark ? "light" : "dark"} />
 
@@ -146,6 +148,7 @@ function AppNavigation() {
         <Stack.Screen name="TransacScreen" component={TransacScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+    </SubscriptionProvider>
   );
 }
 
