@@ -53,7 +53,7 @@ export const SubscriptionProvider = ({ children }) => {
 
   const checkProStatus = (customerInfo) => {
     // 'premium' debe coincidir con el ID de tu Entitlement en RevenueCat
-    if (customerInfo.entitlements.active['premium']) {
+    if (customerInfo.entitlements.active['FintechApp Premium']) {
       setIsPro(true);
     } else {
       setIsPro(false);
@@ -84,10 +84,14 @@ export const SubscriptionProvider = ({ children }) => {
       Alert.alert("Error", "No se pudieron restaurar las compras");
     }
   };
+  useEffect(() => {
+  console.log("Offerings loaded: ", offerings);
+}, [offerings]);
 
   return (
     <SubscriptionContext.Provider value={{ offerings, isPro, purchasePackage, restorePurchases, loading }}>
       {children}
+      
     </SubscriptionContext.Provider>
   );
 };

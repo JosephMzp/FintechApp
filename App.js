@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet } from "react-native";
+import { useEffect } from "react";
 // 1. Importamos los temas por defecto para usarlos de base
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native"; 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -49,6 +50,8 @@ import QRScannerScreen from "./screens/QRScannerScreen";
 import PrivacidadSeguridad from "./screens/PrivacidadSeguridad";
 import TransacScreen from "./screens/TransacScreen";
 import { SubscriptionProvider } from './store/SubscriptionStore';
+import SubscriptionScreen from "./screens/SubscriptionScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -146,6 +149,8 @@ function AppNavigation() {
         <Stack.Screen name="QRScanner" component={QRScannerScreen} />
         <Stack.Screen name="priv" component={PrivacidadSeguridad} />
         <Stack.Screen name="TransacScreen" component={TransacScreen} />
+
+        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </SubscriptionProvider>
